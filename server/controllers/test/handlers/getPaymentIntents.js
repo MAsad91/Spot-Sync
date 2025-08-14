@@ -1,6 +1,6 @@
-const { http200, http400 } = require("../../../../global/errors/httpCodes");
+const { http200, http400 } = require("../../../global/errors/httpCodes");
 const { ObjectId } = require("mongoose").Types;
-const Subscription = require("../../../../models/subscriptions");
+const Subscription = require("../../../models/subscriptions");
 
 module.exports = async (req, res) => {
   try {
