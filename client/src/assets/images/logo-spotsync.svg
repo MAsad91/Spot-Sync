@@ -1,0 +1,29 @@
+<svg width="160" height="50" viewBox="0 0 160 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rectangle with rounded corners -->
+  <rect x="2" y="2" width="156" height="46" rx="10" fill="url(#gradient)" stroke="url(#gradient)" stroke-width="2"/>
+  
+  <!-- SpotSync text -->
+  <text x="80" y="32" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">
+    SpotSync
+  </text>
+  
+  <!-- Sync arrows -->
+  <g fill="white" opacity="0.8">
+    <!-- Top arrow -->
+    <path d="M20 15 L24 10 L28 15 L26 15 L26 20 L22 20 L22 15 Z"/>
+    <!-- Right arrow -->
+    <path d="M35 25 L40 30 L35 35 L35 33 L30 33 L30 27 L35 27 Z"/>
+    <!-- Bottom arrow -->
+    <path d="M28 40 L24 45 L20 40 L22 40 L22 35 L26 35 L26 40 Z"/>
+    <!-- Left arrow -->
+    <path d="M15 30 L10 25 L15 20 L15 22 L20 22 L20 26 L15 26 Z"/>
+  </g>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg> 

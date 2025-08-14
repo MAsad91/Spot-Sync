@@ -1,0 +1,534 @@
+const SubscriptionCollection = require("../../../../models/subscriptions");
+const PaymentCollection = require("../../../../models/payments");
+const ReceiptCollection = require("../../../../models/receipts");
+const ReservationCollection = require("../../../../models/reservations");
+const {
+  http200,
+  http400,
+  http403,
+} = require("../../../../global/errors/httpCodes");
+const {
+  Types: { ObjectId },
+  isValidObjectId,
+} = require("mongoose");
+const moment = require("moment");
+const {
+  createPaymentIntent,
+  createPaymentIntentForACH,
+  getOrCreateDCCustomer,
+  getStripeCustomerId,
+} = require("../../../../services/stripe");
+const {
+  generateSerialNumber,
+  amountToShow,
+  generateExternalKey,
+  getDateInfo,
+} = require("../../../../global/functions");
+const { isEmpty, get } = require("lodash");
+const { sendMessage } = require("../../../../services/plivo");
+const {
+  isDirectChargePayment,
+  getSubscriptionRevenueModel,
+} = require("../../../../services/revenue");
+const Authorizenet = require("../../../../services/authorizenet");
+
+const SendAttachmentEmail = require("../../../../services/APIServices/sendAttachmentEmail");
+
+const getNewDates = async ({ startDate, endDate, isMonthly, isReActive }) => {
+  const oldStartMoment = moment(startDate);
+  const oldEndMoment = moment(endDate);
+  const duration = oldEndMoment.diff(oldStartMoment, "days");
+  let newStartDate, newEndDate;
+  if (isMonthly) {
+    newStartDate = oldEndMoment.clone().add(1, "days");
+    const daysInMonth = newStartDate.daysInMonth();
+    newEndDate = moment(newStartDate)
+      .utc()
+      .add(daysInMonth - 1, "days");
+    if (isReActive) {
+      newStartDate = moment().add(1, "days");
+      newEndDate = moment(newStartDate).endOf("month");
+    }
+  } else {
+    newStartDate = oldStartMoment.clone().add(1, "month").startOf("day");
+    newEndDate = newStartDate.clone().add(duration, "days").startOf("day");
+    if (isReActive) {
+      newStartDate = moment().add(1, "days");
+      newEndDate = newStartDate.clone().add(duration, "days").startOf("day");
+    }
+  }
+  const nextRenewalDate = newEndDate.clone().add(1, "days");
+
+  return {
+    startDate: newStartDate.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+    endDate: newEndDate.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+    nextRenewalDate: moment(nextRenewalDate).format("MM/DD/YYYY"),
+  };
+};
+
+module.exports = async (req, res) => {
+  let success = false;
+  try {
+    const {
+      userId,
+      params: { subscriptionId },
+      body: { isReActive },
+    } = req;
+    if (!userId || !isValidObjectId(userId))
+      return res.status(http403).json({
+        success,
+        message: "Invalid Token",
+      });
+
+    const query = {
+      _id: ObjectId(subscriptionId),
+      status: 10,
+    };
+    const subscription = await SubscriptionCollection.findOne(query).populate(
+      "customerId paymentId placeId brandId"
+    );
+
+    if (!subscription) {
+      return res.status(http403).json({
+        success,
+        message: "Invalid Subscription!",
+      });
+    }
+    const {
+      customerId,
+      defaultPaymentMethodId,
+      paymentId,
+      paymentMethodType,
+      placeId,
+      baseRate,
+      licensePlate,
+    } = subscription;
+
+    const paymentMethod = defaultPaymentMethodId
+      ? defaultPaymentMethodId
+      : paymentId.paymentMethodId;
+
+    const newDates = await getNewDates({
+      startDate: subscription.startDate,
+      endDate: subscription.endDate,
+      isMonthly: subscription.isMonthly,
+      isReActive,
+    });
+
+    const activeLicensePlateCount = licensePlate.filter(
+      (plate) => plate.status === 10
+    );
+    const revenueModal = await getSubscriptionRevenueModel(
+      {
+        baseRate,
+        placeId: placeId._id,
+        isApplyTax: subscription.isApplyTax || false,
+        isApplyServiceFee: subscription.isApplyServiceFee || false,
+        isApplyTaxOnServiceFee: placeId.applyTaxOnServiceFee || false,
+        licensePlateCount: activeLicensePlateCount.length,
+      },
+      subscription.isDirectChargeSubscription
+    );
+
+    const currentDate = moment().tz(placeId.timeZoneId);
+    const { daysInMonth, daysLeftInMonth } = getDateInfo(currentDate);
+    const proRateAmount = (baseRate / daysInMonth) * daysLeftInMonth;
+
+    const proRevenueModal = await getSubscriptionRevenueModel(
+      {
+        baseRate: proRateAmount,
+        placeId: placeId._id,
+        isApplyTax: subscription.isApplyTax || false,
+        isApplyServiceFee: subscription.isApplyServiceFee || false,
+        isApplyTaxOnServiceFee: placeId.applyTaxOnServiceFee || false,
+        licensePlateCount: activeLicensePlateCount.length,
+      },
+      subscription.isDirectChargeSubscription
+    );
+
+    let reservationObject = {
+      licensePlate: subscription?.licensePlate
+        .filter((obj) => obj.status === 10)
+        .map((obj) => obj.licensePlateNumber),
+      subscriptionId: subscription._id,
+      customerId: customerId._id,
+      placeId: placeId._id,
+      baseRate: revenueModal?.baseRate || 0,
+      totalAmount: revenueModal?.totalAmount || 0,
+      isbpRevenue: revenueModal?.isbpRevenue || 0,
+      tax: revenueModal?.tax || 0,
+      cityTax: revenueModal?.cityTax || 0,
+      countyTax: revenueModal?.countyTax || 0,
+      serviceFee: revenueModal?.serviceFee || 0,
+      ownerPayout: revenueModal?.ownerPayout || 0,
+      paymentGatewayFee: revenueModal?.paymentGatewayFee || 0,
+      applicationFee: revenueModal?.applicationFee || 0,
+      brandId: subscription?.brandId,
+      subscriptionNumber: subscription?.subscriptionNumber,
+      startDate: newDates?.startDate,
+      endDate: newDates?.endDate,
+    };
+    if (isReActive && subscription?.isMonthly) {
+      reservationObject.baseRate = proRevenueModal.baseRate || 0;
+      reservationObject.totalAmount = proRevenueModal.totalAmount || 0;
+      reservationObject.isbpRevenue = proRevenueModal.isbpRevenue || 0;
+      reservationObject.tax = proRevenueModal.tax || 0;
+      reservationObject.cityTax = proRevenueModal.cityTax || 0;
+      reservationObject.countyTax = proRevenueModal.countyTax || 0;
+      reservationObject.serviceFee = proRevenueModal.serviceFee || 0;
+      reservationObject.ownerPayout = proRevenueModal.ownerPayout || 0;
+      reservationObject.paymentGatewayFee =
+        proRevenueModal.paymentGatewayFee || 0;
+      reservationObject.applicationFee = proRevenueModal.applicationFee || 0;
+    }
+    let paymentObject = {
+      customerId: customerId._id,
+      purpose: "SUBSCRIPTION",
+      subscriptionId: subscription._id,
+      stripeCustomerId: await getStripeCustomerId(customerId, placeId),
+      paymentMethodId: paymentMethod,
+      paymentMethodType,
+      subscriptionNumber: get(subscription, "subscriptionNumber", ""),
+      placeId: placeId._id,
+      licensePlate: get(subscription, "licensePlate", []),
+      isApplyTax: get(subscription, "isApplyTax", false),
+      isApplyServiceFee: get(subscription, "isApplyServiceFee", false),
+      isApplyTaxOnServiceFee: get(
+        subscription,
+        "isApplyTaxOnServiceFee",
+        false
+      ),
+      paymentGatewayFeePayBy: subscription.paymentGatewayFeePayBy,
+      baseRate: revenueModal?.baseRate || 0,
+      tax: revenueModal?.tax || 0,
+      taxPercentage: subscription.taxPercentage || 0,
+      cityTax: revenueModal?.cityTax || 0,
+      cityTaxPercentage: subscription.cityTaxPercentage || 0,
+      countyTax: revenueModal?.countyTax || 0,
+      countyTaxPercentage: subscription.countyTaxPercentage || 0,
+      serviceFee: revenueModal?.serviceFee || 0,
+      ownerPayout: revenueModal?.ownerPayout || 0,
+      isbpRevenue: revenueModal?.isbpRevenue || 0,
+      applicationFee: revenueModal?.applicationFee || 0,
+      paymentGatewayFee: revenueModal?.paymentGatewayFee || 0,
+      totalAmount: revenueModal?.totalAmount || 0,
+    };
+    if (isReActive && subscription?.isMonthly) {
+      paymentObject.baseRate = proRevenueModal.baseRate || 0;
+      paymentObject.totalAmount = proRevenueModal.totalAmount || 0;
+      paymentObject.cityTax = proRevenueModal.cityTax || 0;
+      paymentObject.countyTax = proRevenueModal.countyTax || 0;
+      paymentObject.serviceFee = proRevenueModal.serviceFee || 0;
+      paymentObject.ownerPayout = proRevenueModal.ownerPayout || 0;
+      paymentObject.isbpRevenue = proRevenueModal.isbpRevenue || 0;
+      paymentObject.applicationFee = proRevenueModal.applicationFee || 0;
+      paymentObject.paymentGatewayFee = proRevenueModal.paymentGatewayFee || 0;
+    }
+
+    const directChargePayment = isDirectChargePayment(placeId, subscription);
+    const stripeProps = {
+      total:
+        isReActive && subscription?.isMonthly
+          ? proRevenueModal?.totalAmount
+          : revenueModal?.totalAmount || 0,
+      applicationFeeAmount: reservationObject.applicationFee,
+      connectedAccountId: get(
+        subscription,
+        "placeId.connectAccountId",
+        "acct_1OmGEqH75gj1EHDr"
+      ),
+      customerId: await getStripeCustomerId(customerId, placeId),
+      customer: customerId,
+      place: placeId,
+      directChargePayment,
+      currency: "usd",
+      metadata: {
+        mobile: get(customerId, "mobile", ""),
+        email: get(customerId, "email", ""),
+        subscriptionId: subscription._id.toString(),
+        shortlyId: subscription.shortlyId ? subscription.shortlyId : "",
+        Purpose: "SUBSCRIPTION",
+        parkingCode: get(subscription, "placeId.parkingCode", ""),
+        paymentMethodType: "card",
+        statement_descriptor: get(
+          subscription,
+          "placeId.statementDescriptor",
+          false
+        ),
+      },
+      paymentMethodId: paymentMethod,
+    };
+
+    let receiptData = {
+      subscriptionType: subscription.isMonthly ? "Monthly" : "Custom",
+      subscriptionNumber: subscription.subscriptionNumber,
+      toEmail: get(customerId, "email", ""),
+      parkerName: `${get(customerId, "firstName", "")} ${get(
+        customerId,
+        "lastName",
+        ""
+      )}`,
+      brandLogo: get(subscription, "brandLogo", ""),
+      startDate: moment(newDates.startDate).format("MM/DD/YYYY"),
+      endDate: moment(newDates.endDate).format("MM/DD/YYYY"),
+      tax: `${amountToShow(revenueModal.tax)}`,
+      cityTax: `${amountToShow(revenueModal.cityTax)}`,
+      countyTax: `${amountToShow(revenueModal.countyTax)}`,
+      serviceFee: `${revenueModal.serviceFee / 100}`,
+      paymentGatewayFee: `${amountToShow(revenueModal.paymentGatewayFee)}`,
+      total: `${amountToShow(revenueModal.totalAmount)}`,
+      baseRate: `${amountToShow(revenueModal?.baseRate)}`,
+      brandName: `${get(subscription, "brandId.brandName", "")}`,
+      brandAddress: `${get(subscription, "brandId.brandAddress", "")}`,
+      brandMobile: `${get(subscription, "brandId.ownerMobileNumber", "")}`,
+      companyName: `${get(customerId, "companyName", "")}`,
+      parkerEmail: `${get(customerId, "email", "")}`,
+      autoRenew: get(subscription, "isAutoRenew", false),
+      nextRenewalDate: newDates.nextRenewalDate,
+      placeAddress: get(subscription, "placeId.google.formatted_address", ""),
+      discount: 0,
+      licensePlates: get(subscription, "licensePlate", []).filter(
+        (obj) => obj.status === 10
+      ),
+      updatedServiceFee:
+        get(subscription, "paymentGatewayFeePayBy", "isbp") === "customer"
+          ? `${amountToShow(
+              get(revenueModal, "paymentGatewayFee", 0) +
+                revenueModal.serviceFee
+            )}`
+          : `${amountToShow(revenueModal.serviceFee)}`,
+    };
+    if (isReActive && subscription.isMonthly) {
+      receiptData.tax = `${amountToShow(proRevenueModal.tax)}`;
+      receiptData.cityTax = `${amountToShow(proRevenueModal.cityTax)}`;
+      receiptData.countyTax = `${amountToShow(proRevenueModal.countyTax)}`;
+      receiptData.serviceFee = `${proRevenueModal.serviceFee / 100}`;
+      receiptData.paymentGatewayFee = `${amountToShow(
+        proRevenueModal.paymentGatewayFee
+      )}`;
+      receiptData.total = `${amountToShow(proRevenueModal.totalAmount)}`;
+      receiptData.baseRate = `${amountToShow(proRevenueModal?.baseRate)}`;
+      receiptData.updatedServiceFee =
+        get(subscription, "paymentGatewayFeePayBy", "isbp") === "customer"
+          ? `${amountToShow(
+              get(proRevenueModal, "paymentGatewayFee", 0) +
+                proRevenueModal.serviceFee
+            )}`
+          : `${amountToShow(proRevenueModal.serviceFee)}`;
+    }
+
+    let paymentIntent = {};
+
+    if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
+      const authorizenet = new Authorizenet(subscription.placeId);
+      paymentIntent = await authorizenet.chargeCustomerProfile(
+        subscription.customerId,
+        isReActive && subscription.isMonthly
+          ? proRevenueModal?.totalAmount / 100
+          : revenueModal?.totalAmount / 100
+      );
+    } else {
+      if (directChargePayment) {
+        const connectAccountId = get(
+          subscription,
+          "placeId.connectAccountId",
+          "acct_1OmGEqH75gj1EHDr"
+        );
+        const customerDCProfile = await getOrCreateDCCustomer(
+          customerId,
+          connectAccountId,
+          paymentMethod,
+          subscription.placeId
+        );
+
+        paymentObject.stripeCustomerId = customerDCProfile.customerId;
+        paymentObject.paymentMethodId = customerDCProfile.paymentMethodId;
+        paymentObject.isDirectCharge = true;
+        paymentObject.connectAccountId = connectAccountId;
+      }
+      if (paymentMethodType === "ACH") {
+        paymentIntent = await createPaymentIntentForACH(stripeProps);
+      } else if (paymentMethodType === "card") {
+        paymentIntent = await createPaymentIntent(stripeProps);
+      }
+    }
+
+    console.log("paymentIntent --->", paymentIntent);
+
+    if (!paymentIntent.success) {
+      const transactionDate = moment
+        .unix(paymentIntent.data?.payment_intent?.created || moment().unix())
+        .utc()
+        .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+      paymentObject.paymentStatus = "failed";
+      paymentObject.paymentInfo = paymentIntent.data;
+      paymentObject.transactionId = paymentIntent.data?.payment_intent?.id;
+      paymentObject.transactionDate = transactionDate;
+      reservationObject.transactionId = paymentIntent.data?.payment_intent?.id;
+      reservationObject.transactionDate = transactionDate;
+      const payment = await PaymentCollection.create(paymentObject);
+      reservationObject.status = "failed";
+      reservationObject.paymentId = payment._id;
+      await ReservationCollection.create(reservationObject);
+      await SubscriptionCollection.updateOne(
+        { _id: subscription._id },
+        { subscriptionStatus: "failed" }
+      );
+      return res.status(http400).json({
+        success: false,
+        message: `Payment Failed! ${get(
+          paymentIntent,
+          "data.transactionResponse.errors[0].errorText",
+          get(paymentIntent, "data.message", "N/A")
+        )}`,
+      });
+    } else {
+      const transactionDate = moment
+        .unix(paymentIntent.data?.payment_intent?.created || moment().unix())
+        .utc()
+        .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+      const receiptNumber = await generateSerialNumber({ type: "receipt" });
+      reservationObject.status =
+        paymentMethodType === "ACH"
+          ? "initialize"
+          : paymentMethodType === "card"
+          ? "success"
+          : "";
+      paymentObject.paymentStatus =
+        paymentMethodType === "ACH"
+          ? "initialize"
+          : paymentMethodType === "card"
+          ? "success"
+          : "";
+
+      receiptData.serialNumber = receiptNumber;
+      receiptData.type = "receipt";
+      paymentObject.paymentInfo = paymentIntent.data;
+      reservationObject.transactionId = paymentIntent.data?.id;
+      paymentObject.transactionId = paymentIntent.data?.id;
+      paymentObject.transactionDate = transactionDate;
+      reservationObject.transactionDate = transactionDate;
+      receiptData.paymentData = moment
+        .tz(transactionDate, placeId.timeZoneId)
+        .format("MM/DD/YYYY hh:mm A");
+      receiptData.paymentDate = moment
+        .tz(transactionDate, placeId.timeZoneId)
+        .format("MM/DD/YYYY hh:mm A");
+      receiptData.transactionId = paymentIntent.data?.id;
+
+      const receiptURL = `${process.env.FRONT_DOMAIN}sub-receipt?id=${receiptData.serialNumber}`;
+      await ReceiptCollection.create(receiptData),
+        console.log("receiptURL ---->", receiptURL);
+
+      paymentObject.receiptURL = receiptURL;
+      const payment = await PaymentCollection.create(paymentObject);
+      reservationObject.paymentId = payment._id;
+      await ReservationCollection.create(reservationObject);
+      const endDate = newDates.endDate;
+      const isActive = moment().isBefore(moment(endDate));
+      const subscriptionStatus =
+        isReActive && !isActive
+          ? "cancel"
+          : !isActive
+          ? "expired"
+          : paymentMethodType === "ACH"
+          ? "initialize"
+          : paymentMethodType === "card"
+          ? "active"
+          : "";
+
+      const updateData = {
+        isReminderEmailSend: false,
+        isSubscriptionActive: true,
+        paymentId: payment._id,
+        subscriptionStatus,
+        $inc: { renewalCount: 1 },
+        startDate: newDates.startDate,
+        endDate: newDates.endDate,
+        receiptURL,
+      };
+      if (isReActive && subscription.isMonthly) {
+        updateData.firstMonthBaseRate = proRevenueModal.baseRate || 0;
+        updateData.firstMonthServiceFee = proRevenueModal.serviceFee || 0;
+        updateData.firstMonthTax = proRevenueModal.tax || 0;
+        updateData.firstMonthCityTax = proRevenueModal.cityTax || 0;
+        updateData.firstMonthCountyTax = proRevenueModal.countyTax || 0;
+        updateData.firstMonthTotalAmount = proRevenueModal.totalAmount || 0;
+        updateData.firstMonthOwnerPayout = proRevenueModal.ownerPayout || 0;
+        updateData.firstMonthIsbpRevenue = proRevenueModal.isbpRevenue || 0;
+        updateData.firstMonthApplicationFee =
+          proRevenueModal.applicationFee || 0;
+        updateData.firstMonthPaymentGatewayFee =
+          proRevenueModal.paymentGatewayFee || 0;
+      }
+      await SubscriptionCollection.updateOne(
+        { _id: subscription._id },
+        updateData
+      );
+
+      if (paymentMethodType === "card") {
+        if (customerId.isEmailPrimary) {
+          await SendAttachmentEmail({
+            type: "paymentConfirmation",
+            attachmentData: receiptData,
+          });
+        } else {
+          const licensePlateArray = subscription?.licensePlate
+            .filter((obj) => obj.status === 10)
+            .map((obj) => obj.licensePlateNumber);
+          const mobileNumber = get(customerId, "mobile", false);
+          if (mobileNumber || !isEmpty(mobileNumber)) {
+            const plivoNumber = get(subscription, "placeId.plivoNumber", false);
+            const props = {
+              from: plivoNumber,
+              to: mobileNumber,
+              body: `
+              Your payment for your parking subscription with ${get(
+                subscription,
+                "brandId.brandName",
+                ""
+              )} at ${get(
+                subscription,
+                "placeId.google.formatted_address",
+                ""
+              )} has been processed.
+              Parker Name: ${get(customerId, "firstName", "")} ${get(
+                customerId,
+                "lastName",
+                ""
+              )}
+              Amount: ${amountToShow(subscription.totalAmount)}
+              License Plate(s): ${licensePlateArray}
+              Start Date: ${moment(newDates.startDate).format("MM/DD/YYYY")}
+              End Date: ${moment(newDates.endDate).format("MM/DD/YYYY")}
+              To access a receipt for this transaction, please click on button below and access your parker dashboard.
+              https://portal.isbparking.bot/parker-login`,
+            };
+            await sendMessage(props);
+            const props2 = {
+              from: plivoNumber,
+              to: mobileNumber,
+              body: `
+              To help you get acquainted with the Parker Dashboard, please click the link below for a step-by-step guide, containing useful tips and instructions on how to navigate your way through your dashboard.
+              https://drive.google.com/file/d/1tOuAkESnRJ9LOhWX3sQU_577chpyUsU-/view?usp=drive_link
+              `,
+            };
+            await sendMessage(props2);
+          }
+        }
+
+
+      }
+      return res.status(http200).json({
+        success: true,
+        message: "Subscription Successfully Renewed!",
+      });
+    }
+  } catch (error) {
+    console.log("error in renew subscription--->", error);
+    return res.status(http400).json({
+      success,
+      message: error?.message || "Something went wrong!",
+    });
+  }
+};

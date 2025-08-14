@@ -1,0 +1,25 @@
+{
+  "short_name": "SpotSync",
+  "name": "SpotSync - Smart Parking Management",
+  "icons": [
+    {
+      "src": "favicon-spotsync.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "favicon-spotsync.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo-spotsync.svg",
+      "type": "image/svg+xml",
+      "sizes": "200x60"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
