@@ -21,7 +21,7 @@ const notification = require("./notification/index");
 const payment = require("./payment/index");
 const test = require("./test/index");
 const customer = require("./customer/index");
-const whatsapp = require("./whatsapp/index");
+
 
 const dashboard = require("./dashboard/homePage/index");
 const webhook = require("./webhooks/index");
@@ -87,7 +87,7 @@ router.use("/test", test);
 
 router.use("/customer", customer);
 
-router.use("/whatsapp", whatsapp);
+
 
 router.use("/dashboard", dashboard);
 

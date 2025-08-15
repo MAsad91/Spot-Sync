@@ -24,7 +24,7 @@ const {
 } = require("../../../../global/functions");
 const { sendMessage } = require("../../../../services/plivo");
 const { getRateDuration } = require("../../../../services/rateDuration");
-const { sendReservationConfirmationWhatsApp } = require("../../../../services/whatsapp");
+
 const { sendSlack } = require("../../../../services/slack");
 const { sendDiscord } = require("../../../../services/discord");
 const moment = require("moment-timezone");
@@ -529,25 +529,7 @@ module.exports = async (req, res) => {
         await sendMessage(props);
       }
 
-      // Send WhatsApp notification
-      if (mobile) {
-        try {
-          const reservationData = {
-            licensePlate: licensePlate,
-            startDate: receiptData.startDate,
-            endDate: receiptData.endDate,
-            totalAmount: receiptData.totalAmount,
-            validationCode: shortlyData.validationCode || "N/A",
-            receiptURL: receiptURL
-          };
 
-          await sendReservationConfirmationWhatsApp(mobile, reservationData);
-          console.log('WhatsApp notification sent successfully');
-        } catch (whatsappError) {
-          console.error('WhatsApp notification failed:', whatsappError);
-          // Don't fail the entire payment process if WhatsApp fails
-        }
-      }
       const slackMessage = `Payment received -
       Place: ${receiptData.placeAddress}
       ${!isPass ? `License plate: ${licensePlate}` : ``} 
