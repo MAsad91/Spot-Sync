@@ -114,24 +114,7 @@ I'm a passionate **Full-Stack Web Developer** with expertise in modern web techn
 
 ---
 
-## 💼 What Clients Say
-
-> *"Muhammad Asad delivered an exceptional e-commerce platform that exceeded our expectations. His attention to detail and commitment to quality is outstanding."* 
-> 
-> **- Sarah Johnson, CEO at TechStart**
-
-> *"Working with Asad was a pleasure. He understood our requirements perfectly and delivered a solution that perfectly fits our business needs."*
-> 
-> **- Ahmed Khan, Founder at Digital Solutions**
-
----
-
 ## 🎯 Why Choose Me?
-
-### **✅ Proven Track Record**
-- 5+ years of web development experience
-- 50+ successful projects delivered
-- 100% client satisfaction rate
 
 ### **✅ Technical Excellence**
 - Clean, maintainable code
