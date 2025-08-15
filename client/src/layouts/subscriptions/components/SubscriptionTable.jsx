@@ -701,14 +701,14 @@ const SubscriptionsTable = (props) => {
                   variant="caption"
                   sx={{ color: "black.light", textDecoration: "line-through" }}
                 >
-                  {`$${centsToDollars(row?.totalAmount)}`}
+                  {`₨${row?.totalAmount}`}
                 </MDTypography>
                 <MDTypography
                   display="block"
                   variant="caption"
                   sx={{ color: "black.light" }}
                 >
-                  {`$${centsToDollars(row?.firstMonthTotalAmount)}`}
+                  {`₨${row?.firstMonthTotalAmount}`}
                 </MDTypography>
               </Stack>
             </>
@@ -718,7 +718,7 @@ const SubscriptionsTable = (props) => {
               variant="caption"
               sx={{ color: "black.light" }}
             >
-              {`$${centsToDollars(row?.totalAmount)}`}
+              {`₨${row?.totalAmount}`}
             </MDTypography>
           )}
         </>

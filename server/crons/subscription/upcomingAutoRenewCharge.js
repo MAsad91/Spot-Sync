@@ -10,7 +10,8 @@ const {
 } = require("../../services/stripe");
 const { amountToShow } = require("../../global/functions");
 const { isDirectChargePayment } = require("../../services/revenue");
-const Authorizenet = require("../../services/authorizenet");
+const JazzCash = require("../../services/jazzCash");
+const EasyPaisa = require("../../services/easyPaisa");
 
 const getNewDates = async ({ startDate, endDate, isMonthly }) => {
   const oldStartMoment = moment(startDate);
@@ -161,9 +162,12 @@ const AutoRenewCharge = async () => {
       };
 
       let paymentIntent;
-      if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
-        const authorizenet = new Authorizenet(subscription.placeId);
-        paymentIntent = await authorizenet.chargeCustomerProfile(subscription.customerId, totalAmount/100);
+      if (subscription.placeId.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(subscription.placeId);
+        paymentIntent = await jazzCash.chargeCustomer(subscription.customerId, totalAmount/100, "Subscription renewal via Jazz Cash");
+      } else if (subscription.placeId.paymentGateway === "EASY_PAISA") {
+        const easyPaisa = new EasyPaisa(subscription.placeId);
+        paymentIntent = await easyPaisa.chargeCustomer(subscription.customerId, totalAmount/100, "Subscription renewal via EasyPaisa");
       } else {
         if (directChargePayment) {
           const connectAccountId = get(subscription, "placeId.connectAccountId", "acct_1OmGEqH75gj1EHDr")

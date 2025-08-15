@@ -1,18 +1,39 @@
 const { DEFAULT_COUNTRY_CODE } = require("../../constants");
 const moment = require("moment-timezone");
 const increaseCounter = require("../../services/APIServices/increaseCounter");
-// Simple phone number parsing function to replace chatbot dependency
+// Enhanced phone number parsing function with Pakistan support
 function getParsedPhoneNumberInfo(phoneNumber) {
   try {
     // Remove all non-digit characters
     const cleanedNumber = phoneNumber.replace(/\D/g, '');
+    
+    // Pakistan numbers: +92 followed by 10 digits
+    if (phoneNumber.startsWith('+92') && cleanedNumber.length === 12) {
+      return {
+        isValid: true,
+        number: cleanedNumber,
+        countryCallingCode: "+92",
+        country: "PK"
+      };
+    }
+    
+    // Pakistan numbers without +92: 10 digits starting with 3
+    if (cleanedNumber.length === 10 && cleanedNumber.startsWith('3')) {
+      return {
+        isValid: true,
+        number: `92${cleanedNumber}`,
+        countryCallingCode: "+92",
+        country: "PK"
+      };
+    }
     
     // If it starts with 1 and has 11 digits, it's a US number
     if (cleanedNumber.length === 11 && cleanedNumber.startsWith('1')) {
       return {
         isValid: true,
         number: cleanedNumber,
-        countryCallingCode: "+1"
+        countryCallingCode: "+1",
+        country: "US"
       };
     }
     
@@ -21,7 +42,8 @@ function getParsedPhoneNumberInfo(phoneNumber) {
       return {
         isValid: true,
         number: `1${cleanedNumber}`,
-        countryCallingCode: "+1"
+        countryCallingCode: "+1",
+        country: "US"
       };
     }
     
@@ -38,13 +60,15 @@ function getParsedPhoneNumberInfo(phoneNumber) {
     return {
       isValid: false,
       number: phoneNumber,
-      countryCallingCode: "+1"
+      countryCallingCode: "+92", // Default to Pakistan
+      country: "PK"
     };
   } catch (error) {
     return {
       isValid: false,
       number: phoneNumber,
-      countryCallingCode: "+1"
+      countryCallingCode: "+92", // Default to Pakistan
+      country: "PK"
     };
   }
 }
@@ -130,6 +154,16 @@ function generateAddress(addressData) {
     }
   });
   return address;
+}
+
+function rupeesToPKR(rupeeAmount) {
+  console.log("rupee amount ===>", rupeeAmount);
+  const res =
+    typeof rupeeAmount === "number" && !isNaN(rupeeAmount)
+      ? Math.round(rupeeAmount)
+      : 0;
+  console.log("PKR value ===>", res);
+  return res;
 }
 
 function dollarsToCents(dollarAmount) {
@@ -281,6 +315,14 @@ function centsToDollars(centsAmount) {
   return dollars.toFixed(2);
 }
 
+function pkrToRupees(pkrAmount) {
+  return pkrAmount; // PKR is already in whole rupees
+}
+
+function formatPKR(amount) {
+  return `₨${amount}`;
+}
+
 function generateDemoEmail(domain = "example.com", prefix = "user") {
   const randomNumber = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
@@ -340,8 +382,7 @@ function getDatesFromDuration({ duration }) {
 }
 
 function amountToShow(amount) {
-  const formattedAmount = amount / 100;
-  return `${formattedAmount.toFixed(2)}`;
+  return `${amount}`;
 }
 
 function formatTime24to12(time24) {
@@ -377,22 +418,22 @@ function generateDisplayNameForRate({
     case "daily":
       displayName = `${validHours} hr${
         validHours !== 1 ? "s" : ""
-      } @ $${validAmount}`;
+      } @ ₨${validAmount}`;
       break;
     case "hourly":
-      displayName = `$${validAmount} / hour`;
+      displayName = `₨${validAmount} / hour`;
       break;
     case "all_day":
-      displayName = `All day @ $${validAmount} (Good until ${formattedEndTime})`;
+      displayName = `All day @ ₨${validAmount} (Good until ${formattedEndTime})`;
       break;
     case "overnight":
       displayName =
         endDay === "same_day"
-          ? `Overnight @ $${validAmount} (Good until ${formattedEndTime})`
-          : `Overnight @ $${validAmount} (Good until ${formattedEndTime} Next Day)`;
+          ? `Overnight @ ₨${validAmount} (Good until ${formattedEndTime})`
+          : `Overnight @ ₨${validAmount} (Good until ${formattedEndTime} Next Day)`;
       break;
     case "monthly":
-      displayName = `Monthly @ $${validAmount}`;
+      displayName = `Monthly @ ₨${validAmount}`;
       break;
     default:
       displayName = "Invalid rate type";

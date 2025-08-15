@@ -16,16 +16,17 @@ import MDSnackbar from "components/MDSnackbar";
 import PaymentGatewayCard from "./components/PaymentGatewayCard";
 import { debounce, map } from "lodash";
 import CreateServiceFee from "./components/CreateAndUpdateServiceFee";
-import IsbRevenueCard from "./components/IsbRevenueCard";
+// import IsbRevenueCard from "./components/IsbRevenueCard";
 import ServiceFeeCard from "./components/ServiceFeeCard";
-import SaasSubscriptionCard from "./components/SaasSubscriptionCard";
+// import SaasSubscriptionCard from "./components/SaasSubscriptionCard";
 import ApplyTaxOnServiceFeeCard from "./components/ApplyTaxOnServiceFeeCard";
-import SubscriptionIsbRevenueCard from "./components/SubscriptionIsbRevenueCard";
-import StripePaymentTypeCard from "./components/StripePaymentTypeCard";
-import SurchargeCard from "./components/SurchargeCard";
-import SubscriptionSurchargeCard from "./components/SubscriptionSurchargeCard";
-import PaymentGatewayFeeCard from "./components/PaymentGatewayFeeCard";
-import StripeSpecialRevenueSplitCard from "./components/StripeSpecialRevenueSplitCard";
+// import SubscriptionIsbRevenueCard from "./components/SubscriptionIsbRevenueCard";
+// import StripePaymentTypeCard from "./components/StripePaymentTypeCard";
+// import SurchargeCard from "./components/SurchargeCard";
+// import SubscriptionSurchargeCard from "./components/SubscriptionSurchargeCard";
+// import PaymentGatewayFeeCard from "./components/PaymentGatewayFeeCard";
+// import StripeSpecialRevenueSplitCard from "./components/StripeSpecialRevenueSplitCard";
+import PakistaniTaxCard from "./components/PakistaniTaxCard";
 
 function Pricing() {
   const [controller] = useMaterialUIController();
@@ -111,6 +112,12 @@ function Pricing() {
                     )}
                     {placeId && (
                       <Grid item xs={12} sm={6} md={4}>
+                        <PakistaniTaxCard userRole={userData.roleLevel} />
+                      </Grid>
+                    )}
+                    {/* Legacy US Tax Cards - Not needed for Pakistan */}
+                    {/* {placeId && (
+                      <Grid item xs={12} sm={6} md={4}>
                         <SurchargeCard userRole={userData.roleLevel} />
                       </Grid>
                     )}
@@ -118,8 +125,10 @@ function Pricing() {
                       <Grid item xs={12} sm={6} md={4}>
                         <SubscriptionSurchargeCard userRole={userData.roleLevel} />
                       </Grid>
-                    )}
-                    {placeId && (
+                    )} */}
+                    
+                    {/* Advanced Revenue Features - Not essential for basic Pakistan setup */}
+                    {/* {placeId && (
                       <Grid item xs={12} sm={6} md={4}>
                         <SaasSubscriptionCard userRole={userData.roleLevel} />
                       </Grid>
@@ -135,8 +144,10 @@ function Pricing() {
                           userRole={userData.roleLevel}
                         />
                       </Grid>
-                    )}
-                    {placeId && (
+                    )} */}
+                    
+                    {/* Advanced Payment Features - Not essential for basic Pakistan setup */}
+                    {/* {placeId && (
                       <Grid item xs={12} sm={6} md={4}>
                         <StripePaymentTypeCard userRole={userData.roleLevel} />
                       </Grid>
@@ -145,15 +156,16 @@ function Pricing() {
                       <Grid item xs={12} sm={6} md={4}>
                         <PaymentGatewayFeeCard userRole={userData.roleLevel} />
                       </Grid>
-                    )}
+                    )} */}
                     
-                    {placeId && selectedPlace.paymentGateway === "STRIPE" && (
+                    {/* Advanced Stripe Features - Not essential for basic Pakistan setup */}
+                    {/* {placeId && selectedPlace.paymentGateway === "STRIPE" && (
                       <Grid item xs={12} sm={6} md={4}>
                         <StripeSpecialRevenueSplitCard
                           userRole={userData.roleLevel}
                         />
                       </Grid>
-                    )}
+                    )} */}
                   </Grid>
                 </MDBox>
                 <MDBox p={2}>

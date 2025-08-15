@@ -23,7 +23,8 @@ const {
   isDirectChargePayment,
   getSubscriptionRevenueModel,
 } = require("../../services/revenue");
-const Authorizenet = require("../../services/authorizenet");
+const JazzCash = require("../../services/jazzCash");
+const EasyPaisa = require("../../services/easyPaisa");
 const SendAttachmentEmail = require("../../services/APIServices/sendAttachmentEmail");
 
 const getNewDates = async ({ startDate, endDate, isMonthly }) => {
@@ -259,9 +260,9 @@ const AutoRenewChargeCard = async ({ placeId }) => {
 
       let paymentIntent;
       let transactionDate = moment().utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-      if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
-        const authorizenet = new Authorizenet(subscription.placeId);
-        paymentIntent = await authorizenet.chargeCustomerProfile(
+      if (subscription.placeId.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(subscription.placeId);
+        paymentIntent = await jazzCash.chargeCustomer(
           subscription.customerId,
           revenueModal?.totalAmount / 100
         );

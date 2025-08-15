@@ -28,7 +28,8 @@ const { sendMessage } = require("../../../services/plivo");
 
 const { isDirectChargePayment } = require("../../../services/revenue");
 const { getWithDefault } = require("../../../services/utilityService");
-const Authorizenet = require("../../../services/authorizenet");
+const JazzCash = require("../../../services/jazzCash");
+const EasyPaisa = require("../../../services/easyPaisa");
 const SendAttachmentEmail = require("../../../services/APIServices/sendAttachmentEmail");
 
 module.exports = async (req, res) => {
@@ -221,7 +222,7 @@ module.exports = async (req, res) => {
       customer: subscription.customerId,
       place: placeId,
       directChargePayment,
-      currency: "usd",
+      currency: "pkr",
       metadata: {
         mobile: get(subscription, "customerId.mobile", ""),
         email: get(subscription, "customerId.email", ""),
@@ -250,10 +251,10 @@ module.exports = async (req, res) => {
     }
 
     let paymentIntent;
-    // Todo need to remove the authorizenet code from here
-    if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
-      const authorizenet = new Authorizenet(subscription.placeId);
-      paymentIntent = await authorizenet.chargeCustomerProfile(
+    // Pakistan payment gateways
+    if (subscription.placeId.paymentGateway === "JAZZ_CASH") {
+      const jazzCash = new JazzCash(subscription.placeId);
+      paymentIntent = await jazzCash.chargeCustomer(
         subscription.customerId,
         totalAmount / 100
       );
@@ -450,7 +451,7 @@ module.exports = async (req, res) => {
                 "customerId.firstName",
                 ""
               )} ${get(subscription, "customerId.lastName", "")}
-              Amount: ${amountToShow(revenue.totalAmount)}
+              Amount: ₨${amountToShow(revenue.totalAmount)}
               License Plate(s): ${licensePlateArray}
               Start Date: ${moment(subscription.startDate).format("MM/DD/YYYY")}
               End Date: ${moment(subscription.endDate).format("MM/DD/YYYY")}

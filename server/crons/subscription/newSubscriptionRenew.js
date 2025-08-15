@@ -18,7 +18,8 @@ const {
   isDirectChargePayment,
   getSubscriptionRevenueModel,
 } = require("../../services/revenue");
-const Authorizenet = require("../../services/authorizenet");
+const JazzCash = require("../../services/jazzCash");
+const EasyPaisa = require("../../services/easyPaisa");
 
 const getNewDates = async ({ startDate, endDate, isMonthly }) => {
   const oldStartMoment = moment(startDate);
@@ -242,9 +243,9 @@ const RenewAllSubscriptions = async () => {
       if (paymentMethodType === "ACH") {
         paymentIntent = await createPaymentIntentForACH(stripeProps);
       } else if (paymentMethodType === "card") {
-        if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
-          const authorizenet = new Authorizenet(subscription.placeId);
-          paymentIntent = await authorizenet.chargeCustomerProfile(
+              if (subscription.placeId.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(subscription.placeId);
+        paymentIntent = await jazzCash.chargeCustomer(
             subscription.customerId,
             totalAmount / 100
           );

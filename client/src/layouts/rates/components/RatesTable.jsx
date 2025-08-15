@@ -98,7 +98,7 @@ const RatesTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$ ${centsToDollars(row?.amount)}`}
+          {`₨ ${row?.amount}`}
         </MDTypography>
       ),
     },
@@ -113,7 +113,7 @@ const RatesTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$ ${centsToDollars(row?.minimumAmount || 0)}`}
+          {`₨ ${row?.minimumAmount}`}
         </MDTypography>
       ),
     },

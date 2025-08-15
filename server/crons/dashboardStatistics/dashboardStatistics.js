@@ -27,7 +27,10 @@ const calculateStatsForPeriod = async (startDate, endDate, placeId) => {
 const updateStatistics = async () => {
     try {
         console.log('Starting statistics update...');
-        const today = moment().startOf('day').toDate();
+        
+        // Define date range for today
+        const todayStart = moment().startOf('day').toDate();
+        const todayEnd = moment().endOf('day').toDate();
         
         // Get all places
         const places = await Place.find().select('_id brandId');
@@ -41,8 +44,6 @@ const updateStatistics = async () => {
                 let statsDoc = await Statistics.findOrCreateStats(placeId, brandId);
                 
                 // Calculate today's stats
-                const todayStart = moment().startOf('day').toDate();
-                const todayEnd = moment().endOf('day').toDate();
                 const todayStats = await calculateStatsForPeriod(todayStart, todayEnd, placeId);
                 
                 // Create data point for today

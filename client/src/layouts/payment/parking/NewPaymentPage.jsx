@@ -562,7 +562,7 @@ const CheckoutForm = (props) => {
                           disabled={isSubmitting}
                           className=" gradientBtn"
                         >
-                          Pay ${amount}
+                          Pay ₨${amount}
                         </Button>
                       ) : (
                         <Button

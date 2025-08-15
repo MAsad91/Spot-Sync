@@ -30,7 +30,8 @@ const {
   isDirectChargePayment,
   getSubscriptionRevenueModel,
 } = require("../../../../services/revenue");
-const Authorizenet = require("../../../../services/authorizenet");
+const JazzCash = require("../../../../services/jazzCash");
+const EasyPaisa = require("../../../../services/easyPaisa");
 
 const SendAttachmentEmail = require("../../../../services/APIServices/sendAttachmentEmail");
 
@@ -319,13 +320,23 @@ module.exports = async (req, res) => {
 
     let paymentIntent = {};
 
-    if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
-      const authorizenet = new Authorizenet(subscription.placeId);
-      paymentIntent = await authorizenet.chargeCustomerProfile(
+    if (subscription.placeId.paymentGateway === "JAZZ_CASH") {
+      const jazzCash = new JazzCash(subscription.placeId);
+      paymentIntent = await jazzCash.chargeCustomer(
         subscription.customerId,
         isReActive && subscription.isMonthly
           ? proRevenueModal?.totalAmount / 100
-          : revenueModal?.totalAmount / 100
+          : revenueModal?.totalAmount / 100,
+        "Subscription renewal via Jazz Cash"
+      );
+    } else if (subscription.placeId.paymentGateway === "EASY_PAISA") {
+      const easyPaisa = new EasyPaisa(subscription.placeId);
+      paymentIntent = await easyPaisa.chargeCustomer(
+        subscription.customerId,
+        isReActive && subscription.isMonthly
+          ? proRevenueModal?.totalAmount / 100
+          : revenueModal?.totalAmount / 100,
+        "Subscription renewal via EasyPaisa"
       );
     } else {
       if (directChargePayment) {

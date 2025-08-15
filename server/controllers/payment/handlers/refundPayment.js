@@ -7,7 +7,8 @@ const {
 } = require('mongoose')
 const { get, isEmpty } = require('lodash')
 const { refund } = require('../../../services/stripe')
-const Authorizenet = require('../../../services/authorizenet')
+const JazzCash = require('../../../services/jazzCash');
+const EasyPaisa = require('../../../services/easyPaisa');
 
 module.exports = async (req, res) => {
   try {
@@ -95,36 +96,31 @@ module.exports = async (req, res) => {
     let paymentRefund = {};
     if (isEmpty(get(paymentData, 'stripeCustomerId')) &&
       !isEmpty(get(paymentData, 'paymentInfo.transactionResponse.accountNumber'))) {
-      console.log("trying authorizenet refund ===>");
-      // Refund Authorize.net payment
-      const authorizenet = new Authorizenet(paymentData.placeId);
-
-      // Try voiding the transaction first
-      const paymentVoid = await authorizenet.voidTransaction(transactionId);
-      console.log("paymentVoid ===>", paymentVoid);
-
-      if (!paymentVoid.success) {
-        // If voiding fails, refund the transaction
-        const cardLastFourDigit = get(paymentData, "paymentInfo.transactionResponse.accountNumber", "").slice(-4);
-        paymentRefund = await authorizenet.refundTransaction(
-          transactionId,
-          cardLastFourDigit,
-          amount/100
-        );
-
-        console.log("paymentRefund ===>", paymentRefund);
-        if (!paymentRefund.success) {
-          return res.status(http400).json({
-            success: false,
-            message: paymentRefund.message,
-          })
-        } else {
-          newData.transactionId = paymentRefund.data?.transactionId;
-        }
+      console.log("trying Pakistan payment gateway refund ===>");
+      // Refund Pakistan payment gateway payment
+      const paymentGateway = get(paymentData, 'paymentMethodType', '');
+      
+      if (paymentGateway === 'jazz_cash') {
+        const jazzCash = new JazzCash(paymentData.placeId);
+        // Jazz Cash refund logic would go here
+        console.log("Jazz Cash refund not implemented yet");
+        return res.status(http400).json({
+          success: false,
+          message: "Jazz Cash refund not implemented yet",
+        });
+      } else if (paymentGateway === 'easy_paisa') {
+        const easyPaisa = new EasyPaisa(paymentData.placeId);
+        // EasyPaisa refund logic would go here
+        console.log("EasyPaisa refund not implemented yet");
+        return res.status(http400).json({
+          success: false,
+          message: "EasyPaisa refund not implemented yet",
+        });
       } else {
-        newData.transactionId = paymentVoid.data?.transactionId;
-        // In case of payment void we can't return partial refund amount
-        newData.totalAmount = paymentData.totalAmount;
+        return res.status(http400).json({
+          success: false,
+          message: "Unsupported payment gateway for refund",
+        });
       }
     } else {
       console.log("trying stripe refund ===>");

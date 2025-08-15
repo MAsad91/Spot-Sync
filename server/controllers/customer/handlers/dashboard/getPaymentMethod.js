@@ -10,7 +10,8 @@ const {
 } = require("mongoose");
 const { DOC_STATUS } = require("../../../../constants");
 const { getPaymentMethodById } = require("../../../../services/stripe");
-const Authorizenet = require("../../../../services/authorizenet");
+const JazzCash = require("../../../../services/jazzCash");
+const EasyPaisa = require("../../../../services/easyPaisa");
 const { isEmpty } = require("lodash");
 const { type } = require("os");
 
@@ -47,29 +48,19 @@ module.exports = async (req, res) => {
 
     let paymentMethod;
 
-    if (body.authorizenetCustomerId && body.placeId) {
-      const authorizenet = new Authorizenet(body.placeId);
-      paymentMethod = await authorizenet.getPaymentProfileDetails(body.authorizenetCustomerId, body.paymentMethodId);
+    if (body.jazzCashCustomerId && body.placeId) {
+      const jazzCash = new JazzCash(body.placeId);
+      // Jazz Cash doesn't have payment profiles like Authorize.net
+      return res.status(http200).json({
+        success: true,
+        message: "Success",
+        data: {},
+      });
+    }
 
-      if (paymentMethod?.success) {
-        return res.status(http200).json({
-          success: true,
-          message: "Success",
-          data: {
-            id: body.paymentMethodId,
-            card: {
-              brand: paymentMethod.creditCart?.cardType?.toLowerCase(),
-              display_brand: paymentMethod.creditCart?.cardType?.toLowerCase(),
-              exp_month: "XX",
-              exp_year: "XX",
-              last4: paymentMethod.creditCart?.cardNumber?.slice(-4),
-            },
-            customer: body.authorizenetCustomerId,
-            type: "card"
-          },
-        });
-      }
-
+    if (body.easyPaisaCustomerId && body.placeId) {
+      const easyPaisa = new EasyPaisa(body.placeId);
+      // EasyPaisa doesn't have payment profiles like Authorize.net
       return res.status(http200).json({
         success: true,
         message: "Success",

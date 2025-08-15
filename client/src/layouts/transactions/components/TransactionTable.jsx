@@ -337,11 +337,72 @@ const TransactionsTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$${centsToDollars(row?.baseRate)}`}
+          {`₨${centsToDollars(row?.baseRate)}`}
         </MDTypography>
       ),
     },
 
+    {
+      field: "gst",
+      headerName: "GST",
+      width: 120,
+      editable: false,
+      renderCell: ({ row }) => (
+        <MDTypography
+          display="block"
+          variant="caption"
+          sx={{ color: "black.light" }}
+        >
+          {`₨${centsToDollars(row?.gst)}`}
+        </MDTypography>
+      ),
+    },
+    {
+      field: "federalExciseDuty",
+      headerName: "Federal Excise Duty",
+      width: 150,
+      editable: false,
+      renderCell: ({ row }) => (
+        <MDTypography
+          display="block"
+          variant="caption"
+          sx={{ color: "black.light" }}
+        >
+          {`₨${centsToDollars(row?.federalExciseDuty)}`}
+        </MDTypography>
+      ),
+    },
+    {
+      field: "provincialTax",
+      headerName: "Provincial Tax",
+      width: 130,
+      editable: false,
+      renderCell: ({ row }) => (
+        <MDTypography
+          display="block"
+          variant="caption"
+          sx={{ color: "black.light" }}
+        >
+          {`₨${centsToDollars(row?.provincialTax)}`}
+        </MDTypography>
+      ),
+    },
+    {
+      field: "withholdingTax",
+      headerName: "Withholding Tax",
+      width: 140,
+      editable: false,
+      renderCell: ({ row }) => (
+        <MDTypography
+          display="block"
+          variant="caption"
+          sx={{ color: "black.light" }}
+        >
+          {`₨${centsToDollars(row?.withholdingTax)}`}
+        </MDTypography>
+      ),
+    },
+    // Legacy tax fields (for backward compatibility)
     {
       field: "tax",
       headerName: "Tax",
@@ -353,7 +414,7 @@ const TransactionsTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$${centsToDollars(row?.tax)}`}
+          {`₨${centsToDollars(row?.tax)}`}
         </MDTypography>
       ),
     },
@@ -369,7 +430,7 @@ const TransactionsTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$${centsToDollars(row?.cityTax)}`}
+          {`₨${centsToDollars(row?.cityTax)}`}
         </MDTypography>
       ),
     },
@@ -385,7 +446,7 @@ const TransactionsTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$${centsToDollars(row?.countyTax)}`}
+          {`₨${centsToDollars(row?.countyTax)}`}
         </MDTypography>
       ),
     },
@@ -402,7 +463,7 @@ const TransactionsTable = (props) => {
             variant="caption"
             sx={{ color: "black.light" }}
           >
-            {row.isApplyServiceFee ? `$${centsToDollars(row.serviceFee)}` : 0}
+            {row.isApplyServiceFee ? `₨${centsToDollars(row.serviceFee)}` : 0}
           </MDTypography>
         </>
       ),
@@ -418,7 +479,7 @@ const TransactionsTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$${centsToDollars(row?.paymentGatewayFee)}`}
+          {`₨${centsToDollars(row?.paymentGatewayFee)}`}
         </MDTypography>
       ),
     },
@@ -433,7 +494,7 @@ const TransactionsTable = (props) => {
           variant="caption"
           sx={{ color: "black.light" }}
         >
-          {`$${centsToDollars(row?.totalAmount)}`}
+          {`₨${centsToDollars(row?.totalAmount)}`}
         </MDTypography>
       ),
     },

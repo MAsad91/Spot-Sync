@@ -330,14 +330,14 @@ const ReservationsTable = (props) => {
                 variant="caption"
                 sx={{ color: "black.light", textDecoration: "line-through" }}
               >
-                {`$${centsToDollars(row?.withoutDiscounted?.totalAmount)}`}
+                {`₨${row?.withoutDiscounted?.totalAmount}`}
               </MDTypography>
               <MDTypography
                 display="block"
                 variant="caption"
                 sx={{ color: "black.light" }}
               >
-                {`$${centsToDollars(row?.totalAmount)}`}
+                {`₨${row?.totalAmount}`}
               </MDTypography>
             </Stack>
           ) : (
@@ -346,7 +346,7 @@ const ReservationsTable = (props) => {
               variant="caption"
               sx={{ color: "black.dark" }}
             >
-              {`$ ${centsToDollars(row?.totalAmount)}`}
+              {`₨ ${row?.totalAmount}`}
             </MDTypography>
           )}
         </>
@@ -368,14 +368,14 @@ const ReservationsTable = (props) => {
                 variant="caption"
                 sx={{ color: "black.light", textDecoration: "line-through" }}
               >
-                {`$${centsToDollars(row?.withoutDiscounted?.baseRate)}`}
+                {`₨${row?.withoutDiscounted?.baseRate}`}
               </MDTypography>
               <MDTypography
                 display="block"
                 variant="caption"
                 sx={{ color: "black.light" }}
               >
-                {`$${centsToDollars(row?.baseRate)}`}
+                {`₨${row?.baseRate}`}
               </MDTypography>
             </Stack>
           ) : (
@@ -384,7 +384,7 @@ const ReservationsTable = (props) => {
               variant="caption"
               sx={{ color: "black.dark" }}
             >
-              {`$ ${centsToDollars(row?.baseRate)}`}
+              {`₨ ${row?.baseRate}`}
             </MDTypography>
           )}
         </>
@@ -406,14 +406,14 @@ const ReservationsTable = (props) => {
                 variant="caption"
                 sx={{ color: "black.light", textDecoration: "line-through" }}
               >
-                {`$${centsToDollars(row?.withoutDiscounted?.tax)}`}
+                {`₨${row?.withoutDiscounted?.tax}`}
               </MDTypography>
               <MDTypography
                 display="block"
                 variant="caption"
                 sx={{ color: "black.light" }}
               >
-                {`$${centsToDollars(row?.tax)}`}
+                {`₨${row?.tax}`}
               </MDTypography>
             </Stack>
           ) : (
@@ -422,7 +422,7 @@ const ReservationsTable = (props) => {
               variant="caption"
               sx={{ color: "black.dark" }}
             >
-              {`$ ${centsToDollars(row?.tax)}`}
+              {`₨ ${row?.tax}`}
             </MDTypography>
           )}
         </>
@@ -430,7 +430,7 @@ const ReservationsTable = (props) => {
     },
     {
       field: "cityTax",
-      headerName: `City Tax`,
+      headerName: `Federal Excise Duty`,
       width: 100,
       editable: false,
       renderCell: ({ row }) => (
@@ -443,14 +443,14 @@ const ReservationsTable = (props) => {
                 variant="caption"
                 sx={{ color: "black.light", textDecoration: "line-through" }}
               >
-                {`$${centsToDollars(row?.withoutDiscounted?.cityTax)}`}
+                {`₨${row?.withoutDiscounted?.cityTax}`}
               </MDTypography>
               <MDTypography
                 display="block"
                 variant="caption"
                 sx={{ color: "black.light" }}
               >
-                {`$${centsToDollars(row?.cityTax)}`}
+                {`₨${row?.cityTax}`}
               </MDTypography>
             </Stack>
           ) : (
@@ -459,7 +459,7 @@ const ReservationsTable = (props) => {
               variant="caption"
               sx={{ color: "black.dark" }}
             >
-              {`$ ${centsToDollars(row?.cityTax)}`}
+              {`₨ ${row?.cityTax}`}
             </MDTypography>
           )}
         </>

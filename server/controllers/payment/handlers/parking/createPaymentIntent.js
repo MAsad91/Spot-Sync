@@ -24,6 +24,7 @@ const {
 } = require("../../../../global/functions");
 const { sendMessage } = require("../../../../services/plivo");
 const { getRateDuration } = require("../../../../services/rateDuration");
+const { sendReservationConfirmationWhatsApp } = require("../../../../services/whatsapp");
 const { sendSlack } = require("../../../../services/slack");
 const { sendDiscord } = require("../../../../services/discord");
 const moment = require("moment-timezone");
@@ -260,7 +261,7 @@ module.exports = async (req, res) => {
       isPayNowValidationLaterFlow,
       applicationFeeAmount: get(shortlyData, "applicationFee", 0),
       total: get(shortlyData, "totalAmount", 0),
-      currency: "usd",
+      currency: "pkr",
       connectedAccountId: get(
         shortlyData,
         "placeId.connectAccountId",
@@ -513,7 +514,7 @@ module.exports = async (req, res) => {
           : `Thank You! Your payment for license plate ${licensePlate} has been processed!`;
 
         confirmationSMS += `
-        Total: $${receiptData.total}
+        Total: ₨${receiptData.total}
         Start time: ${receiptData.startDate}
         End time: ${receiptData.endDate}
         ${receiptURL}`;
@@ -526,6 +527,26 @@ module.exports = async (req, res) => {
             : confirmationSMS,
         };
         await sendMessage(props);
+      }
+
+      // Send WhatsApp notification
+      if (mobile) {
+        try {
+          const reservationData = {
+            licensePlate: licensePlate,
+            startDate: receiptData.startDate,
+            endDate: receiptData.endDate,
+            totalAmount: receiptData.totalAmount,
+            validationCode: shortlyData.validationCode || "N/A",
+            receiptURL: receiptURL
+          };
+
+          await sendReservationConfirmationWhatsApp(mobile, reservationData);
+          console.log('WhatsApp notification sent successfully');
+        } catch (whatsappError) {
+          console.error('WhatsApp notification failed:', whatsappError);
+          // Don't fail the entire payment process if WhatsApp fails
+        }
       }
       const slackMessage = `Payment received -
       Place: ${receiptData.placeAddress}

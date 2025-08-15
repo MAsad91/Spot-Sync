@@ -13,6 +13,7 @@ const Shortly = require("../../../../models/shortly");
 const Payments = require("../../../../models/payments");
 const Reservations = require("../../../../models/reservations");
 const ReceiptCollection = require("../../../../models/receipts");
+const Transaction = require("../../../../models/transaction");
 
 // Services
 const { sendEmail } = require("../../../../services/email");
@@ -277,6 +278,22 @@ module.exports = async (req, res) => {
         // Generate receipt number
         const receiptNumber = await generateSerialNumber({ type: "receipt" });
         const transientNumber = await generateSerialNumber({ type: "transient" });
+        
+        // Generate transaction ID for cash/free payments
+        const transactionId = `${isFreeRate ? 'free' : 'cash'}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Create transaction record
+        const transactionObject = {
+          transactionId: transactionId,
+          locationId: placeData._id,
+          status: "success",
+          userId: req.user ? req.user._id : null, // Vendor/admin who processed the payment
+          paymentGateway: isFreeRate ? "free" : "cash",
+          lotCode: get(placeData, "lotCode", ""),
+          transactionDate: new Date(),
+        };
+
+        const transaction = await Transaction.create(transactionObject);
 
                      // Create payment record
              const paymentObject = {
@@ -297,6 +314,7 @@ module.exports = async (req, res) => {
                status: 10,
                receiptNumber: receiptNumber,
                paymentDate: new Date(),
+               transactionId: transactionId,
                metadata: {
                  cashPaymentCollectedBy: req.user ? `${req.user.firstName || ""} ${req.user.lastName || ""}`.trim() : "Admin",
                  paymentMethod: isFreeRate ? "free" : "cash"
@@ -385,6 +403,7 @@ module.exports = async (req, res) => {
                isValidationApplied: false,
                isPaymentOnHold: false,
                discountPercentage: 0,
+               transactionId: transactionId,
                transactionDate: new Date(),
                ridersLastName: lastName
              };
@@ -432,7 +451,7 @@ module.exports = async (req, res) => {
                    const plivoNumber = get(placeData, "plivoNumber", false);
                    const smsBody = isFreeRate 
                      ? `Your free reservation has been created! Receipt #${receiptNumber}. No payment required.`
-                     : `Your reservation has been created! Receipt #${receiptNumber}. Amount: $${amountToShow(revenueModal.totalAmount)}. Thank you for your cash payment.`;
+                     : `Your reservation has been created! Receipt #${receiptNumber}. Amount: ₨${amountToShow(revenueModal.totalAmount)}. Thank you for your cash payment.`;
                    
                    await sendMessage({
                      from: plivoNumber,
@@ -472,8 +491,10 @@ module.exports = async (req, res) => {
 
     // Generate payment URL
     let paymentURL = "";
-    if (placeData.paymentGateway === "AUTHORIZENET") {
-      paymentURL = `${process.env.FRONT_DOMAIN}parking/payment/authorizenet?sId=${shortly.shortlyId}`;
+    if (placeData.paymentGateway === "JAZZ_CASH") {
+      paymentURL = `${process.env.FRONT_DOMAIN}parking/payment/jazzcash?sId=${shortly.shortlyId}`;
+    } else if (placeData.paymentGateway === "EASY_PAISA") {
+      paymentURL = `${process.env.FRONT_DOMAIN}parking/payment/easypaisa?sId=${shortly.shortlyId}`;
     } else {
       paymentURL = `${process.env.FRONT_DOMAIN}parking/payment?sId=${shortly.shortlyId}`;
     }

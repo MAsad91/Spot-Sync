@@ -24,10 +24,12 @@ const { get, isEmpty, intersection } = require("lodash");
 const { getSubscriptionRevenueModel } = require("../../../../services/revenue");
 const brands = require("../../../../models/brands");
 const { sendMessage } = require("../../../../services/plivo");
-const Authorizenet = require("../../../../services/authorizenet");
+const JazzCash = require("../../../../services/jazzCash");
+const EasyPaisa = require("../../../../services/easyPaisa");
 const Shortly = require("../../../../models/shortly");
 const Payments = require("../../../../models/payments");
 const Reservations = require("../../../../models/reservations");
+const Transaction = require("../../../../models/transaction");
 const { generateSerialNumber } = require("../../../../global/functions");
 const moment = require("moment");
 
@@ -81,7 +83,8 @@ module.exports = async (req, res) => {
         plivoId: 1,
         paymentGatewayFeePayBy: 1,
         paymentGateway: 1,
-        authorizenetSettings: 1,
+        jazzCashSettings: 1,
+        easyPaisaSettings: 1,
         stripeConfiguration: 1,
       }
     ).populate("plivoId");
@@ -122,9 +125,12 @@ module.exports = async (req, res) => {
         }
       );
 
-      if (placeData.paymentGateway === "AUTHORIZENET") {
-        const authorizenet = new Authorizenet(placeData);
-        authorizenet.createCustomerProfile(customer);
+      if (placeData.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(placeData);
+        // Jazz Cash doesn't require customer profile creation
+      } else if (placeData.paymentGateway === "EASY_PAISA") {
+        const easyPaisa = new EasyPaisa(placeData);
+        // EasyPaisa doesn't require customer profile creation
       } else {
         if (!await getStripeCustomerId(customer, placeData)) {
           const stripeResponse = await createStripeCustomer({
@@ -334,6 +340,22 @@ module.exports = async (req, res) => {
           const receiptNumber = await generateSerialNumber({ type: "receipt" });
           const subscriptionNumber = await generateSerialNumber({ type: "subscription" });
           
+          // Generate transaction ID for cash payment
+          const transactionId = `cash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+          // Create transaction record
+          const transactionObject = {
+            transactionId: transactionId,
+            locationId: subscription.placeId,
+            status: "success",
+            userId: req.user ? req.user._id : null, // Vendor/admin who processed the cash payment
+            paymentGateway: "cash",
+            lotCode: get(placeData, "lotCode", ""),
+            transactionDate: new Date(),
+          };
+
+          const transaction = await Transaction.create(transactionObject);
+          
           // Create payment record
           const paymentObject = {
             customerId: subscription.customerId,
@@ -354,6 +376,7 @@ module.exports = async (req, res) => {
             status: 10, // Use status for document status (number)
             receiptNumber: receiptNumber,
             paymentDate: new Date(),
+            transactionId: transactionId,
             metadata: {
               cashPaymentCollectedBy: req.user ? `${req.user.firstName || ""} ${req.user.lastName || ""}`.trim() : "Admin",
               paymentMethod: "cash"
@@ -381,7 +404,9 @@ module.exports = async (req, res) => {
             paymentGatewayFee: subscription.paymentGatewayFee,
             paymentMethodType: "cash",
             status: "success", // Use "success" like in processedFreeRate
-            receiptNumber: receiptNumber
+            receiptNumber: receiptNumber,
+            transactionId: transactionId,
+            transactionDate: new Date()
           };
           
           await Reservations.create(reservationObject);
@@ -432,7 +457,7 @@ module.exports = async (req, res) => {
               await sendMessage({
                 from: plivoNumber,
                 to: mobileNumber,
-                body: `Your subscription has been activated! Receipt #${receiptNumber}. Amount: $${amountToShow(subscription.totalAmount)}. Thank you for your cash payment.`
+                body: `Your subscription has been activated! Receipt #${receiptNumber}. Amount: ₨${amountToShow(subscription.totalAmount)}. Thank you for your cash payment.`
               });
             }
           } catch (error) {
@@ -486,8 +511,10 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (placeData.paymentGateway === "AUTHORIZENET")
-          paymentURL = `${domain}payment/authorizenet?shortlyId=${createShortly.shortlyId}`;
+        if (placeData.paymentGateway === "JAZZ_CASH")
+          paymentURL = `${domain}payment/jazzcash?shortlyId=${createShortly.shortlyId}`;
+        else if (placeData.paymentGateway === "EASY_PAISA")
+          paymentURL = `${domain}payment/easypaisa?shortlyId=${createShortly.shortlyId}`;
         else
           paymentURL = `${domain}payment?shortlyId=${createShortly.shortlyId}`;
 

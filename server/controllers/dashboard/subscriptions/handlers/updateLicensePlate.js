@@ -31,7 +31,8 @@ const {
 } = require("../../../../global/functions");
 const moment = require("moment");
 
-const Authorizenet = require("../../../../services/authorizenet");
+const JazzCash = require("../../../../services/jazzCash");
+const EasyPaisa = require("../../../../services/easyPaisa");
 const SendAttachmentEmail = require("../../../../services/APIServices/sendAttachmentEmail");
 
 module.exports = async (req, res) => {
@@ -206,9 +207,9 @@ module.exports = async (req, res) => {
 
       let paymentIntent;
       let transactionDate = moment().utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-      if (placeId.paymentGateway === "AUTHORIZENET") {
-        const authorizenet = new Authorizenet(placeId);
-        paymentIntent = await authorizenet.chargeCustomerProfile(
+      if (placeId.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(placeId);
+        paymentIntent = await jazzCash.chargeCustomer(
           subscriptionData.customerId,
           totalAmount / 100
         );

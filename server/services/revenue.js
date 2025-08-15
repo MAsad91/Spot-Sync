@@ -85,7 +85,7 @@ module.exports = {
       let cityTax = 0;
       let countyTax = 0;
       let serviceFee = roundUp(
-        get(pricingTier, "subscriptionServiceFee", 0) * 100
+        get(pricingTier, "subscriptionServiceFee", 0)
       );
 
       if (licensePlateCount > 0) {
@@ -122,42 +122,46 @@ module.exports = {
         totalAmount = roundUp(totalAmount + paymentGatewayFee);
       }
 
-      const spotsyncRevenueType = get(
-        placeData,
-        "subscriptionSpotsyncRevenueType",
-        "fixed"
-      );
-      const spotsyncRevenuePercentageOf = get(
-        placeData,
-        "subscriptionSpotsyncRevenuePercentageOf",
-        ""
-      );
-      const spotsyncRevenueValue = get(placeData, "subscriptionSpotsyncRevenue", 0);
+      // Advanced revenue features - Commented out for basic Pakistan setup
+      // const spotsyncRevenueType = get(
+      //   placeData,
+      //   "subscriptionSpotsyncRevenueType",
+      //   "fixed"
+      // );
+      // const spotsyncRevenuePercentageOf = get(
+      //   placeData,
+      //   "subscriptionSpotsyncRevenuePercentageOf",
+      //   ""
+      // );
+      // const spotsyncRevenueValue = get(placeData, "subscriptionSpotsyncRevenue", 0);
 
+      // let spotsyncRevenue = 0;
+
+      // if (spotsyncRevenueType === "fixed") {
+      //   spotsyncRevenue = roundUp(spotsyncRevenueValue * 100);
+      // } else if (spotsyncRevenueType === "percentage") {
+      //   switch (spotsyncRevenuePercentageOf) {
+      //     case "serviceFee":
+      //       spotsyncRevenue = roundUp((serviceFee * spotsyncRevenueValue) / 100);
+      //       break;
+      //     case "baseRate":
+      //       spotsyncRevenue = roundUp((baseRate * spotsyncRevenueValue) / 100);
+      //       break;
+      //     case "totalAmount":
+      //       spotsyncRevenue = roundUp((totalAmount * spotsyncRevenueValue) / 100);
+      //       break;
+      //     default:
+      //       spotsyncRevenue = 0;
+      //       break;
+      //   }
+      // }
+      // const saasSubscription = get(placeData, "saasSubscription", false);
+      // if (saasSubscription) {
+      //   spotsyncRevenue = 0;
+      // }
+      
+      // Set default values for basic Pakistan setup
       let spotsyncRevenue = 0;
-
-      if (spotsyncRevenueType === "fixed") {
-        spotsyncRevenue = roundUp(spotsyncRevenueValue * 100);
-      } else if (spotsyncRevenueType === "percentage") {
-        switch (spotsyncRevenuePercentageOf) {
-          case "serviceFee":
-            spotsyncRevenue = roundUp((serviceFee * spotsyncRevenueValue) / 100);
-            break;
-          case "baseRate":
-            spotsyncRevenue = roundUp((baseRate * spotsyncRevenueValue) / 100);
-            break;
-          case "totalAmount":
-            spotsyncRevenue = roundUp((totalAmount * spotsyncRevenueValue) / 100);
-            break;
-          default:
-            spotsyncRevenue = 0;
-            break;
-        }
-      }
-      const saasSubscription = get(placeData, "saasSubscription", false);
-      if (saasSubscription) {
-        spotsyncRevenue = 0;
-      }
 
       const applicationFee = calculateApplicationFee({
         spotsyncRevenue: spotsyncRevenue,
@@ -242,17 +246,30 @@ module.exports = {
       );
       const directChargePayment = get(placeData, "isDirectChargeLocation", false);
       const paymentGatewayFeePayBy = get(placeData, "paymentGatewayFeePayBy", "spotsync")
-      let placeTaxPercentage = get(placeData, "tax", 0);
-      let placeCityTaxPercentage = get(placeData, "cityTax", 0);
-      let placeCountyTaxPercentage = get(placeData, "countyTax", 0);
+      // Pakistani Tax Structure
+      let gstPercentage = get(placeData, "gst", 17);
+      let federalExciseDutyPercentage = get(placeData, "federalExciseDuty", 0);
+      let provincialTaxPercentage = get(placeData, "provincialTax", 0);
+      let withholdingTaxPercentage = get(placeData, "withholdingTax", 0);
+
+      // Legacy tax fields (for backward compatibility) - Commented out for basic Pakistan setup
+      // let placeTaxPercentage = get(placeData, "tax", 0);
+      // let placeCityTaxPercentage = get(placeData, "cityTax", 0);
+      // let placeCountyTaxPercentage = get(placeData, "countyTax", 0);
 
       if (rateType === "monthly") {
-        placeTaxPercentage = get(placeData, "subscriptionSurcharge.stateTax", 0);
-        placeCityTaxPercentage = get(placeData, "subscriptionSurcharge.cityTax", 0);
-        placeCountyTaxPercentage = get(placeData, "subscriptionSurcharge.countyTax", 0);
+        gstPercentage = get(placeData, "subscriptionSurcharge.gst", 17);
+        federalExciseDutyPercentage = get(placeData, "subscriptionSurcharge.federalExciseDuty", 0);
+        provincialTaxPercentage = get(placeData, "subscriptionSurcharge.provincialTax", 0);
+        withholdingTaxPercentage = get(placeData, "subscriptionSurcharge.withholdingTax", 0);
+        
+        // Legacy fields - Commented out for basic Pakistan setup
+        // placeTaxPercentage = get(placeData, "subscriptionSurcharge.stateTax", 0);
+        // placeCityTaxPercentage = get(placeData, "subscriptionSurcharge.cityTax", 0);
+        // placeCountyTaxPercentage = get(placeData, "subscriptionSurcharge.countyTax", 0);
       }
 
-      const isApplyTax = placeTaxPercentage > 0 || placeCityTaxPercentage > 0 ||placeCountyTaxPercentage > 0
+      const isApplyTax = gstPercentage > 0 || federalExciseDutyPercentage > 0 || provincialTaxPercentage > 0 || withholdingTaxPercentage > 0 || placeTaxPercentage > 0 || placeCityTaxPercentage > 0 || placeCountyTaxPercentage > 0;
       const isApplyTaxOnServiceFee = get(
         placeData,
         "applyTaxOnServiceFee",
@@ -273,21 +290,21 @@ module.exports = {
           return;
         }
         if (
-          baseRate === pricing.condition_value * 100 &&
+          baseRate === pricing.condition_value &&
           pricing.condition_operator === "="
         ) {
           pricingTierObj = pricing;
           actualServiceFee = pricing.serviceFee;
           return pricing;
         } else if (
-          baseRate > pricing.condition_value * 100 &&
+          baseRate > pricing.condition_value &&
           pricing.condition_operator === ">"
         ) {
           pricingTierObj = pricing;
           actualServiceFee = pricing.serviceFee;
           return pricing;
         } else if (
-          baseRate < pricing.condition_value * 100 &&
+          baseRate < pricing.condition_value &&
           pricing.condition_operator === "<"
         ) {
           pricingTierObj = pricing;
@@ -312,26 +329,36 @@ module.exports = {
       baseRate = rateType === "custom" && isPass && noOfPasses > 0 ? baseRate * noOfPasses : baseRate;
       totalAmount = isPass ? baseRate : totalAmount;
 
+      // Pakistani Tax Calculations
+      let gst = 0;
+      let federalExciseDuty = 0;
+      let provincialTax = 0;
+      let withholdingTax = 0;
+      
+      // Legacy tax calculations (for backward compatibility)
       let tax = 0;
       let cityTax = 0;
       let countyTax = 0;
-      let serviceFee = actualServiceFee * 100;
+      let placeTaxPercentage = get(placeData, "tax", 0);
+      let placeCityTaxPercentage = get(placeData, "cityTax", 0);
+      let placeCountyTaxPercentage = get(placeData, "countyTax", 0);
+      let serviceFee = actualServiceFee; // PKR is already in whole numbers
 
       if (isApplyTax) {
-        if (isApplyTaxOnServiceFee && isApplyServiceFee) {
-          tax = roundUp(((baseRate + serviceFee) * placeTaxPercentage) / 100);
-          cityTax = roundUp(
-            ((baseRate + serviceFee) * placeCityTaxPercentage) / 100
-          );
-          countyTax = roundUp(
-            ((baseRate + serviceFee) * placeCountyTaxPercentage) / 100
-          );
-        } else {
-          tax = roundUp((baseRate * placeTaxPercentage) / 100);
-          cityTax = roundUp((baseRate * placeCityTaxPercentage) / 100);
-          countyTax = roundUp((baseRate * placeCountyTaxPercentage) / 100);
-        }
-        totalAmount = totalAmount + tax + cityTax + countyTax;
+        const taxBase = isApplyTaxOnServiceFee && isApplyServiceFee ? (baseRate + serviceFee) : baseRate;
+        
+        // Pakistani Tax Calculations
+        gst = roundUp((taxBase * gstPercentage) / 100);
+        federalExciseDuty = roundUp((taxBase * federalExciseDutyPercentage) / 100);
+        provincialTax = roundUp((taxBase * provincialTaxPercentage) / 100);
+        withholdingTax = roundUp((taxBase * withholdingTaxPercentage) / 100);
+        
+        // Legacy tax calculations
+        tax = roundUp((taxBase * placeTaxPercentage) / 100);
+        cityTax = roundUp((taxBase * placeCityTaxPercentage) / 100);
+        countyTax = roundUp((taxBase * placeCountyTaxPercentage) / 100);
+        
+        totalAmount = totalAmount + gst + federalExciseDuty + provincialTax + withholdingTax + tax + cityTax + countyTax;
       }
       if (isApplyServiceFee) {
         totalAmount += roundUp(serviceFee);
@@ -346,36 +373,40 @@ module.exports = {
         totalAmount += roundUp(paymentGatewayFee);
       }
 
-      const spotsyncRevenueType = get(placeData, "spotsyncRevenueType", "fixed");
-      const spotsyncRevenuePercentageOf = get(
-        placeData,
-        "spotsyncRevenuePercentOf",
-        ""
-      );
-      const spotsyncRevenueValue = get(placeData, "spotsyncRevenue", 0);
+      // Advanced revenue features - Commented out for basic Pakistan setup
+      // const spotsyncRevenueType = get(placeData, "spotsyncRevenueType", "fixed");
+      // const spotsyncRevenuePercentageOf = get(
+      //   placeData,
+      //   "spotsyncRevenuePercentOf",
+      //   ""
+      // );
+      // const spotsyncRevenueValue = get(placeData, "spotsyncRevenue", 0);
+      // let spotsyncRevenue = 0;
+      // if (spotsyncRevenueType === "fixed") {
+      //   spotsyncRevenue = spotsyncRevenueValue * 100;
+      // } else if (spotsyncRevenueType === "percentage") {
+      //   switch (spotsyncRevenuePercentageOf) {
+      //     case "serviceFee":
+      //       spotsyncRevenue = roundUp((serviceFee * spotsyncRevenueValue) / 100);
+      //       break;
+      //     case "baseRate":
+      //       spotsyncRevenue = roundUp((baseRate * spotsyncRevenueValue) / 100);
+      //       break;
+      //     case "totalAmount":
+      //       spotsyncRevenue = roundUp((totalAmount * spotsyncRevenueValue) / 100);
+      //       break;
+      //     default:
+      //       spotsyncRevenue = 0;
+      //       break;
+      //   }
+      // }
+      // const saasSubscription = get(placeData, "saasSubscription", false);
+      // if (saasSubscription) {
+      //   spotsyncRevenue = 0;
+      // }
+      
+      // Set default values for basic Pakistan setup
       let spotsyncRevenue = 0;
-      if (spotsyncRevenueType === "fixed") {
-        spotsyncRevenue = spotsyncRevenueValue * 100;
-      } else if (spotsyncRevenueType === "percentage") {
-        switch (spotsyncRevenuePercentageOf) {
-          case "serviceFee":
-            spotsyncRevenue = roundUp((serviceFee * spotsyncRevenueValue) / 100);
-            break;
-          case "baseRate":
-            spotsyncRevenue = roundUp((baseRate * spotsyncRevenueValue) / 100);
-            break;
-          case "totalAmount":
-            spotsyncRevenue = roundUp((totalAmount * spotsyncRevenueValue) / 100);
-            break;
-          default:
-            spotsyncRevenue = 0;
-            break;
-        }
-      }
-      const saasSubscription = get(placeData, "saasSubscription", false);
-      if (saasSubscription) {
-        spotsyncRevenue = 0;
-      }
 
       const applicationFee = calculateApplicationFee({
         spotsyncRevenue: spotsyncRevenue,
@@ -387,22 +418,29 @@ module.exports = {
         processingFee: paymentGatewayFee,
         directChargePayment,
       });
-      const totalAmountInDollars = totalAmount / 100;
-      const applicationFeeInDollars = applicationFee / 100;
-      const paymentGatewayFeeInDollars = paymentGatewayFee / 100;
+      // For PKR, amounts are already in whole rupees (no division by 100 needed)
+      const totalAmountInPKR = totalAmount;
+      const applicationFeeInPKR = applicationFee;
+      const paymentGatewayFeeInPKR = paymentGatewayFee;
 
-      const ownerPayoutInDollars =
-        totalAmountInDollars -
-        applicationFeeInDollars -
+      const ownerPayoutInPKR =
+        totalAmountInPKR -
+        applicationFeeInPKR -
         (excludeProcessingFee(paymentGatewayFeePayBy, directChargePayment)
-          ? paymentGatewayFeeInDollars
+          ? paymentGatewayFeeInPKR
           : 0);
 
-      const ownerPayout = roundUp(ownerPayoutInDollars * 100);
+      const ownerPayout = roundUp(ownerPayoutInPKR);
 
       return {
         baseRate,
         serviceFee,
+        // Pakistani Taxes
+        gst,
+        federalExciseDuty,
+        provincialTax,
+        withholdingTax,
+        // Legacy taxes (for backward compatibility)
         tax,
         cityTax,
         countyTax,

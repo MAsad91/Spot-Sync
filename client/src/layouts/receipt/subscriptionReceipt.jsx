@@ -303,13 +303,13 @@ export default function Invoice(props) {
                       <tbody>
                         <tr>
                           <td style="border: none; padding-top: 6pt; padding-right: 16pt; text-align: right;">Subtotal</td>
-                          <td style="width: 62pt; border: none; padding-top: 6pt; padding-right: 2pt; text-align: right; font-weight: bold;">$${
+                          <td style="width: 62pt; border: none; padding-top: 6pt; padding-right: 2pt; text-align: right; font-weight: bold;">₨${
                             receiptData.baseRate
                           }</td>
                         </tr>
                         <tr>
                           <td style="width: 103pt; padding-right: 16pt">Service Fee</td>
-                          <td style="width: 62pt; font-weight: bold">$${
+                          <td style="width: 62pt; font-weight: bold">₨${
                             receiptData?.updatedServiceFee || 0
                           }</td>
                         </tr>
@@ -317,8 +317,8 @@ export default function Invoice(props) {
                           receiptData.tax && receiptData.tax > 0
                             ? `
                         <tr>
-                        <td style="width: 103pt; padding-right: 16pt">State Tax</td>
-                        <td style="width: 62pt; font-weight: bold">$${receiptData.tax}</td>
+                        <td style="width: 103pt; padding-right: 16pt">GST</td>
+                        <td style="width: 62pt; font-weight: bold">₨${receiptData.tax}</td>
                         `
                             : ""
                         }
@@ -326,8 +326,8 @@ export default function Invoice(props) {
                           receiptData.cityTax && receiptData.cityTax > 0
                             ? `
                           <tr>
-                          <td style="width: 103pt; padding-right: 16pt">City Tax</td>
-                          <td style="width: 62pt; font-weight: bold">$${receiptData.cityTax}</td>
+                          <td style="width: 103pt; padding-right: 16pt">Federal Excise Duty</td>
+                          <td style="width: 62pt; font-weight: bold">₨${receiptData.cityTax}</td>
                           `
                             : ""
                         }
@@ -335,15 +335,15 @@ export default function Invoice(props) {
                           receiptData.countyTax && receiptData.countyTax > 0
                             ? `
                             <tr>
-                            <td style="width: 103pt; padding-right: 16pt">County Tax</td>
-                            <td style="width: 62pt; font-weight: bold">$${receiptData.countyTax}</td>
+                            <td style="width: 103pt; padding-right: 16pt">Provincial Tax</td>
+                            <td style="width: 62pt; font-weight: bold">₨${receiptData.countyTax}</td>
                             `
                             : ""
                         }
                      
                         ${
                           receiptData.isValidationApplied
-                            ? `<tr><td style="width: 103pt; padding-right: 16pt">Discount (${receiptData.discountPercentage}%)</td><td style="width: 62pt; font-weight: bold">-$${receiptData.discount}</td></tr>`
+                            ? `<tr><td style="width: 103pt; padding-right: 16pt">Discount (${receiptData.discountPercentage}%)</td><td style="width: 62pt; font-weight: bold">-₨${receiptData.discount}</td></tr>`
                             : ""
                         }
                         <tr>
@@ -352,7 +352,7 @@ export default function Invoice(props) {
                               ? "Total"
                               : "Total due"
                           }</td>
-                          <td style="width: 62pt; font-weight: bold">$${
+                          <td style="width: 62pt; font-weight: bold">₨${
                             receiptData.total
                           }</td>
                         </tr>

@@ -109,7 +109,7 @@ const PaymentGatewayCard = (props) => {
           >
             {(props) => (
               <form onSubmit={props.handleSubmit}>
-                <Grid container spacing={0} height={paymentEdit ? null : 100}>
+                <Grid container spacing={0} height={paymentEdit ? null : 140}>
                   <Grid item xs={12} container alignItems="center">
                     <MDTypography
                       color="dark"

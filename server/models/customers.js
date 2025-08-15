@@ -62,7 +62,9 @@ const CustomerSchema = new Schema(
     brandId: { type: Schema.Types.ObjectId, ref: "brands" },
     connectAccountCustomerIds: { type: Object },
     stripeCustomerIds: { type: Object },
-    authorizenetCustomerIds: { type: Object },
+    // Pakistan Payment Gateway Customer IDs
+    jazzCashCustomerIds: { type: Object },
+    easyPaisaCustomerIds: { type: Object },
   },
   { timestamps: true }
 );

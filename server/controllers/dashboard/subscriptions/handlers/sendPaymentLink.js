@@ -57,8 +57,10 @@ module.exports = async (req, res) => {
       { $set: { expireOn: expireDateUTC } }
     );
     let paymentURL = "";
-    if (placeId.paymentGateway === "AUTHORIZENET") {
-      paymentURL = `${process.env.FRONT_DOMAIN}payment/authorizenet?shortlyId=${shortlyId}`;
+            if (placeId.paymentGateway === "JAZZ_CASH") {
+          paymentURL = `${process.env.FRONT_DOMAIN}payment/jazzcash?shortlyId=${shortlyId}`;
+        } else if (placeId.paymentGateway === "EASY_PAISA") {
+          paymentURL = `${process.env.FRONT_DOMAIN}payment/easypaisa?shortlyId=${shortlyId}`;
     }
     else {
       paymentURL = `${process.env.FRONT_DOMAIN}payment?shortlyId=${shortlyId}`;

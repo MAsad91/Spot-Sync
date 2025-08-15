@@ -17,7 +17,9 @@ const PaymentSchema = new Schema(
     shortlyId: { type: String },
     receiptURL: { type: String },
     stripeCustomerId: { type: String },
-    authorizenetCustomerId: { type: String },
+    // Pakistan Payment Gateway Customer IDs
+    jazzCashCustomerId: { type: String },
+    easyPaisaCustomerId: { type: String },
     paymentMethodId: { type: String },
     paymentMethodType: { type: String },
     paymentStatus: { type: String, default: "failed", index: true },

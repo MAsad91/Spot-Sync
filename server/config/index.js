@@ -3,11 +3,36 @@ module.exports = {
   MONGO_URI: process.env.DATABASE_INFO,
   jwtSecret: process.env.JWT_SECRET,
 
+  // Pakistani Configuration
+  CURRENCY: {
+    CODE: "PKR",
+    SYMBOL: "₨",
+    NAME: "Pakistani Rupee",
+    DECIMAL_PLACES: 2,
+    EXCHANGE_RATE: 1, // 1 USD = 1 PKR (for now, can be updated with real rate)
+  },
+
+  // Pakistani Tax Configuration
+  TAX_CONFIG: {
+    GST_RATE: 17, // General Sales Tax rate in Pakistan
+    FEDERAL_EXCISE_DUTY: 0, // Federal Excise Duty
+    PROVINCIAL_TAX: 0, // Provincial tax (varies by province)
+    WITHHOLDING_TAX: 0, // Withholding tax
+  },
+
+  // Pakistani Default Configuration
+  PAKISTAN_CONFIG: {
+    DEFAULT_TIMEZONE: "Asia/Karachi",
+    DEFAULT_COUNTRY_CODE: "+92",
+    DEFAULT_CURRENCY: "PKR",
+    DEFAULT_LANGUAGE: "en-PK"
+  },
+
   PAYMENT_GATEWAY: {
     STRIPE: "STRIPE",
-    STRIPE_PMC: "STRIPE_PMC",
-    AUTHORIZENET: "AUTHORIZENET",
-    AUTHORIZENET_PMC: "AUTHORIZENET_PMC",
+    JAZZ_CASH: "JAZZ_CASH",
+    EASY_PAISA: "EASY_PAISA",
+    CASH: "CASH",
   },
   LEVEL: {
     SUPER_ADMIN: 100,

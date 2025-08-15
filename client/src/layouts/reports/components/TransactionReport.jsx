@@ -197,7 +197,7 @@ function TransactionReports() {
             "totalAmount",
           ].includes(key)
         ) {
-          value = value ? centsToDollars(value) : 0;
+          value = value ? value : 0;
         } else if (key === "paymentMethodType") {
           value =
             value === "card" ? "Credit Card" : value === "ACH" ? "ACH" : value;

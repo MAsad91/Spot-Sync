@@ -14,7 +14,6 @@
   "dependencies": {
     "@google-cloud/dialogflow-cx": "^4.4.0",
     "@sendgrid/mail": "^7.7.0",
-    "authorizenet": "^1.0.8",
     "aws-sdk": "^2.1375.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.0.1",
@@ -41,6 +40,7 @@
     "plivo": "^4.60.1",
     "pusher": "^5.2.0",
     "stripe": "^12.6.0",
+    "twilio": "^4.19.0",
     "uuid": "9.0.0",
     "xlsx": "^0.18.5"
   }

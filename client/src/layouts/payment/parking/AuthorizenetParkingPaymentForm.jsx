@@ -461,7 +461,7 @@ const AuthorizenetParkingPaymentForm = () => {
 																		disabled={loading || !isPaymentFormValid || disableSubmit}
 																		sx={{ width: { xs: "150px", sm: "250px" } }}
 																	>
-																		{`Pay $${amountToShow(totalPayAmount)}`}
+																		{`Pay ₨${amountToShow(totalPayAmount)}`}
 																	</MDButton>
 																</Box>
 																<Divider light className="my-3" />

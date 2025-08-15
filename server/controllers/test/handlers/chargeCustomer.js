@@ -13,7 +13,8 @@ const {
   Types: { ObjectId },
 } = require("mongoose");
 const { isDirectChargePayment } = require("../../../services/revenue");
-const Authorizenet = require("../../../services/authorizenet");
+const JazzCash = require("../../../services/jazzCash");
+const EasyPaisa = require("../../../services/easyPaisa");
 const { getSubscriptionRevenueModel } = require("../../../services/revenue");
 const { generateSerialNumber, amountToShow } = require("../../../global/functions");
 
@@ -205,9 +206,9 @@ const ChargeCustomer = async () => {
     // };
 
     let paymentIntent;
-    if (subscription.placeId.paymentGateway === "AUTHORIZENET") {
-      const authorizenet = new Authorizenet(subscription.placeId);
-      paymentIntent = await authorizenet.chargeCustomerProfile(
+          if (subscription.placeId.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(subscription.placeId);
+        paymentIntent = await jazzCash.chargeCustomer(
         subscription.customerId,
         totalAmount / 100
       );

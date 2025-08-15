@@ -99,24 +99,41 @@ module.exports = async (req, res) => {
     paymentGatewayFeePayBy: brandData.paymentGatewayFeePayBy,
     applyTaxOnServiceFee: brandData.applyTaxOnServiceFee,
     isDirectChargeLocation: brandData.isDirectChargeLocation,
-          spotsyncRevenue: brandData.spotsyncRevenue,
-      spotsyncRevenueType: brandData.spotsyncRevenueType,
-      spotsyncRevenuePercentOf: brandData.spotsyncRevenuePercentOf,
-      subscriptionSpotsyncRevenue: brandData.subscriptionSpotsyncRevenue,
-      subscriptionSpotsyncRevenueType: brandData.subscriptionSpotsyncRevenueType,
-      subscriptionSpotsyncRevenuePercentOf: brandData.subscriptionSpotsyncRevenuePercentOf,
-    merchantFee: {
-      percentage: brandData.paymentGatewayFeePercentage,
-      fixedCents: brandData.paymentGatewayFeeFixedCents,
-    },
+    
+    // Advanced revenue features - Commented out for basic Pakistan setup
+    // spotsyncRevenue: brandData.spotsyncRevenue,
+    // spotsyncRevenueType: brandData.spotsyncRevenueType,
+    // spotsyncRevenuePercentOf: brandData.spotsyncRevenuePercentOf,
+    // subscriptionSpotsyncRevenue: brandData.subscriptionSpotsyncRevenue,
+    // subscriptionSpotsyncRevenueType: brandData.subscriptionSpotsyncRevenueType,
+    // subscriptionSpotsyncRevenuePercentOf: brandData.subscriptionSpotsyncRevenuePercentOf,
+    
+    // Advanced payment gateway features - Commented out for basic Pakistan setup
+    // merchantFee: {
+    //   percentage: brandData.paymentGatewayFeePercentage,
+    //   fixedCents: brandData.paymentGatewayFeeFixedCents,
+    // },
+    // Pakistani Tax Structure
+    gst: brandData.gst || 17,
+    federalExciseDuty: brandData.federalExciseDuty || 0,
+    provincialTax: brandData.provincialTax || 0,
+    withholdingTax: brandData.withholdingTax || 0,
+    
     subscriptionSurcharge: {
+      // Pakistani Tax for Subscriptions
+      gst: brandData.subscriptionGst || 17,
+      federalExciseDuty: brandData.subscriptionFederalExciseDuty || 0,
+      provincialTax: brandData.subscriptionProvincialTax || 0,
+      withholdingTax: brandData.subscriptionWithholdingTax || 0,
+      // Legacy fields
       stateTax: brandData.subscriptionStateTax,
       cityTax: brandData.subscriptionCityTax,
       countyTax: brandData.subscriptionCountyTax,
     },
-    tax: brandData.transientStateTax,
-    cityTax: brandData.transientCityTax,
-    countyTax: brandData.transientCountyTax,
+    // Legacy tax fields (for backward compatibility) - Commented out for basic Pakistan setup
+    // tax: brandData.transientStateTax,
+    // cityTax: brandData.transientCityTax,
+    // countyTax: brandData.transientCountyTax,
     serviceFee: brandData.serviceFee,
     subscriptionServiceFee: brandData.subscriptionServiceFee,
   };

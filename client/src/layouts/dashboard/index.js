@@ -97,7 +97,7 @@ function Dashboard() {
                 color="success"
                 icon="money"
                 title="Revenue"
-                count={`$${centsToDollars(revenue.revenue || 0)}`}
+                count={`₨${revenue.revenue || 0}`}
                 percentage={{
                   color: revenue.percentageIncrease > 0 ? "success" : "error",
                   amount: `${revenue.percentageIncrease > 0 ? '+' : ''}${revenue.percentageIncrease || 0}%`,
@@ -112,7 +112,7 @@ function Dashboard() {
                 color="primary"
                 icon="home"
                 title="Service Fee"
-                count={`$${centsToDollars(serviceFee.serviceFee || 0)}`}
+                count={`₨${serviceFee.serviceFee || 0}`}
                 percentage={{
                   color: serviceFee.percentageIncrease > 0 ? "success" : "error",
                   amount: `${serviceFee.percentageIncrease > 0 ? '+' : ''}${serviceFee.percentageIncrease || 0}%`,
@@ -127,7 +127,7 @@ function Dashboard() {
                 color="secondary"
                 icon="attach_money"
                 title="Tax"
-                count={`$${centsToDollars(tax.tax || 0)}`}
+                count={`₨${tax.tax || 0}`}
                 percentage={{
                   color: tax.percentageIncrease > 0 ? "success" : "error",
                   amount: `${tax.percentageIncrease > 0 ? '+' : ''}${tax.percentageIncrease || 0}%`,

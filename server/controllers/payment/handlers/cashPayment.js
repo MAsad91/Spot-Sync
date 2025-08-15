@@ -5,6 +5,7 @@ const Subscriptions = require("../../../models/subscriptions");
 const Payments = require("../../../models/payments");
 const Reservations = require("../../../models/reservations");
 const Shortly = require("../../../models/shortly");
+const Transaction = require("../../../models/transaction");
 // Session model removed - no longer needed for chatbot functionality
 const { generateSerialNumber } = require("../../../global/functions");
 const { sendEmail } = require("../../../services/email");
@@ -102,6 +103,22 @@ module.exports = async (req, res) => {
     // Generate receipt and subscription numbers
     const receiptNumber = await generateSerialNumber({ type: "receipt" });
     const subscriptionNumber = await generateSerialNumber({ type: "subscription" });
+    
+    // Generate transaction ID for cash payment
+    const transactionId = `cash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Create transaction record
+    const transactionObject = {
+      transactionId: transactionId,
+      locationId: placeId._id,
+      status: "success",
+      userId: req.user ? req.user._id : null, // Vendor/admin who processed the cash payment
+      paymentGateway: "cash",
+      lotCode: get(placeId, "lotCode", ""),
+      transactionDate: new Date(),
+    };
+
+    const transaction = await Transaction.create(transactionObject);
 
     // Create payment record
     const paymentObject = {
@@ -130,6 +147,7 @@ module.exports = async (req, res) => {
       applicationFee: get(revenue, "applicationFee", 0),
       paymentGatewayFee: get(revenue, "paymentGatewayFee", 0),
       totalAmount: get(revenue, "totalAmount", 0),
+      transactionId: transactionId,
       transactionDate: new Date(),
       paymentInfo: {
         cashPaymentCollectedBy,
@@ -164,6 +182,8 @@ module.exports = async (req, res) => {
       paymentStatus: "paid",
       paymentId: payment._id,
       customerId: subscription.customerId._id,
+      transactionId: transactionId,
+      transactionDate: new Date(),
     };
 
     // Update subscription to active

@@ -11,7 +11,8 @@ const moment = require("moment");
 const { sendMessage } = require("../../services/plivo");
 const { sendSlack } = require("../../services/slack");
 const { amountToShow } = require("../../global/functions");
-const Authorizenet = require("../../services/authorizenet");
+const JazzCash = require("../../services/jazzCash");
+const EasyPaisa = require("../../services/easyPaisa");
 
 const CapturePaymentForValidationLaterFLow = async () => {
   try {
@@ -53,9 +54,9 @@ const CapturePaymentForValidationLaterFLow = async () => {
         
         let paymentIntent = {}
 
-        if (placeId?.paymentGateway === "AUTHORIZENET") {
-          const authorizenet = new Authorizenet(placeId);
-          paymentIntent = await authorizenet.captureAuthorizedPayment(
+              if (placeId?.paymentGateway === "JAZZ_CASH") {
+        const jazzCash = new JazzCash(placeId);
+        paymentIntent = await jazzCash.chargeCustomer(
             customerId,
             totalAmount / 100,
             transactionId

@@ -253,6 +253,29 @@ export const createSlackValidation = Yup.object().shape({
 });
 
 export const updatePaymentFeeValidation = Yup.object().shape({
+  // Pakistani Tax Validation
+  gst: Yup.number()
+    .typeError("GST must be a number")
+    .required()
+    .label("GST")
+    .max(100, "GST should be maximum 100 %"),
+  federalExciseDuty: Yup.number()
+    .typeError("Federal Excise Duty must be a number")
+    .required()
+    .label("Federal Excise Duty")
+    .max(100, "Federal Excise Duty should be maximum 100 %"),
+  provincialTax: Yup.number()
+    .typeError("Provincial Tax must be a number")
+    .required()
+    .label("Provincial Tax")
+    .max(100, "Provincial Tax should be maximum 100 %"),
+  withholdingTax: Yup.number()
+    .typeError("Withholding Tax must be a number")
+    .required()
+    .label("Withholding Tax")
+    .max(100, "Withholding Tax should be maximum 100 %"),
+  
+  // Legacy tax validation (for backward compatibility)
   tax: Yup.number()
     .typeError("Tax must be a number")
     .required()

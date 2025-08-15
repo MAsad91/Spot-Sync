@@ -54,7 +54,7 @@ const SendSMSConfirmation = async () => {
             "lastName",
             ""
           )}
-            Amount: ${amountToShow(subscription.totalAmount)}
+            Amount: ₨${amountToShow(subscription.totalAmount)}
             License Plate(s): ${licensePlateArray.join(", ")}
             Start Date: ${moment(subscription.startDate).format("MM/DD/YYYY")}
             End Date: ${moment(subscription.endDate).format("MM/DD/YYYY")}

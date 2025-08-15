@@ -7,10 +7,9 @@ const geParkingShortlyDetails = require("./handlers/parking/getShortlyDetails");
 const refundPayment = require("./handlers/refundPayment");
 const createParkingPaymentIntent = require("./handlers/parking/createPaymentIntent");
 const generateClientSecretACH = require("./handlers/generateClientSecretACH");
-const makeParkingPayment = require("./handlers/authorizenet/makeParkingPayment");
-const makePayment = require("./handlers/authorizenet/makePayment");
-const fetchPaymentMethods = require("./handlers/authorizenet/fetchPaymentMethods");
-const deletePaymentMethodAuthnet = require("./handlers/authorizenet/deletePaymentMethod");
+// Pakistan Payment Gateway Handlers
+const jazzCashPayment = require("./handlers/jazzCashPayment");
+const easyPaisaPayment = require("./handlers/easyPaisaPayment");
 const updateSubscriptionAfter3dSecure = require("./handlers/updateSubscriptionAfter3dSecure");
 const cashPayment = require("./handlers/cashPayment");
 const processReservationPayment = require("./handlers/processReservationPayment");
@@ -26,10 +25,9 @@ router.post("/generateClientSecret", generateClientSecretACH);
 router.patch("/paymentMethodDelete/:cardId", deletePaymentMethod);
 router.post("/paymentRefund", refundPayment);
 router.post("/updateSubscriptionAfter3dSecure", updateSubscriptionAfter3dSecure);
-router.post("/authorizenet/makePayment", makePayment);
-router.post("/authorizenet/makeParkingPayment", makeParkingPayment);
-router.post("/authorizenet/fetchPaymentMethods", fetchPaymentMethods);
-router.post("/authorizenet/paymentMethodDelete", deletePaymentMethodAuthnet);
+// Pakistan Payment Gateway Routes
+router.post("/jazzcash", jazzCashPayment);
+router.post("/easypaisa", easyPaisaPayment);
 router.post("/cash", cashPayment);
 router.post("/processReservationPayment", processReservationPayment);
 

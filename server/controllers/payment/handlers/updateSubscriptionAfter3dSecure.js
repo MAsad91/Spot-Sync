@@ -179,7 +179,7 @@ module.exports = async (req, res) => {
                 "customerId.firstName",
                 ""
               )} ${get(subscription, "customerId.lastName", "")}
-              Amount: ${amountToShow(revenue.totalAmount)}
+              Amount: ₨${amountToShow(revenue.totalAmount)}
               License Plate(s): ${licensePlateArray}
               Start Date: ${moment(subscription.startDate).format("MM/DD/YYYY")}
               End Date: ${moment(subscription.endDate).format("MM/DD/YYYY")}

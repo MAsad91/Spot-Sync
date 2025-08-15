@@ -12,7 +12,8 @@ const {
   attachPaymentMethodToCustomer,
   getStripeCustomerId,
 } = require("../../../../services/stripe");
-const Authorizenet = require("../../../../services/authorizenet");
+const JazzCash = require("../../../../services/jazzCash");
+const EasyPaisa = require("../../../../services/easyPaisa");
 const { isEmpty, get } = require("lodash");
 const {
   isDirectChargePayment,
@@ -58,24 +59,10 @@ module.exports = async (req, res) => {
     }
 
     if (paymentToken) {
-      const authorizenet = new Authorizenet(subscription.placeId);
-      const paymentRes = await authorizenet.createPaymentProfileViaToken(subscription.customerId, paymentToken);
-      console.log("paymentRes ---->", paymentRes);
-
-      if (!paymentRes?.success) {
-        return res.status(http400).json({
-          success: false,
-          message: paymentRes.message || "Failed to create payment profile",
-        });
-      }
-
-      await Subscription.findByIdAndUpdate(subscriptionId, {
-        $set: { defaultPaymentMethodId: paymentRes.message },
-      });
-
-      return res.status(http200).json({
-        success: true,
-        message: "Payment Method has been updated",
+      // Pakistan payment gateways don't support payment profiles like Authorize.net
+      return res.status(http400).json({
+        success: false,
+        message: "Payment profiles not supported for Pakistan payment gateways",
       });
     }
 

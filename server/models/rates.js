@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const { dollarsToCents } = require("../global/functions");
+const { rupeesToPKR } = require("../global/functions");
 
 const RateSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "users" },
@@ -43,10 +43,10 @@ const RateSchema = new Schema({
 
 RateSchema.pre("save", function (next) {
   if (this.isModified("amount") || this.isNew) {
-    this.amount = dollarsToCents(this.amount);
+    this.amount = rupeesToPKR(this.amount);
   }
   if (this.isModified("minimumAmount") || this.isNew) {
-    this.minimumAmount = dollarsToCents(this.minimumAmount);
+    this.minimumAmount = rupeesToPKR(this.minimumAmount);
   }
 
   next();

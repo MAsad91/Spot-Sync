@@ -241,7 +241,7 @@ module.exports = async (req, res) => {
           from: plivoNumber,
           to: shortlyData.phoneNumber,
           body: `Thank You! Your payment for license plate ${licensePlate} has been processed! 
-          Total: $${amountToShow(totalAmount)}
+          Total: ₨${amountToShow(totalAmount)}
           Start time: ${receiptData.startDate}
           End time: ${receiptData.endDate}
           ${receiptURL}`

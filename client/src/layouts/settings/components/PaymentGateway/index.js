@@ -192,7 +192,7 @@ function PaymentGateway() {
                   fontSize="12px"
                   mb={1.5}
                   bgColor={
-                    "AUTHORIZENET" === values?.paymentGateway
+                    "JAZZ_CASH" === values?.paymentGateway
                       ? sidenavColor
                       : color
                   }
@@ -205,10 +205,10 @@ function PaymentGateway() {
                   display="flex"
                   justifyContent="center"
                   onClick={() =>
-                    setFieldValue("paymentGateway", "AUTHORIZENET")
+                    setFieldValue("paymentGateway", "JAZZ_CASH")
                   }
                 >
-                  Authorize.net (PMC)
+                  Jazz Cash
                 </MDBox>
               </Grid>
               <Grid item xs={12} md={3} lg={3}>
@@ -216,7 +216,7 @@ function PaymentGateway() {
                   fontSize="12px"
                   mb={1.5}
                   bgColor={
-                    "AUTHORIZENET_PMC" === values?.paymentGateway
+                    "EASY_PAISA" === values?.paymentGateway
                       ? sidenavColor
                       : color
                   }
@@ -229,10 +229,10 @@ function PaymentGateway() {
                   display="flex"
                   justifyContent="center"
                   onClick={() =>
-                    setFieldValue("paymentGateway", "AUTHORIZENET_PMC")
+                    setFieldValue("paymentGateway", "EASY_PAISA")
                   }
                 >
-                  Authorize.net ( PMC-2)
+                  EasyPaisa
                 </MDBox>
               </Grid>
               <Grid item xs={12} md={3} lg={3}>
@@ -256,26 +256,7 @@ function PaymentGateway() {
                 </MDBox>
               </Grid>
               <Grid item xs={12} md={3} lg={3}>
-                <MDBox
-                  fontSize="12px"
-                  mb={1.5}
-                  bgColor={
-                    "STRIPE_PMC" === values?.paymentGateway
-                      ? sidenavColor
-                      : color
-                  }
-                  sx={{
-                    color: "primary.contrastText",
-                    pt: 4,
-                    pb: 4,
-                    borderRadius: "16px",
-                  }}
-                  display="flex"
-                  justifyContent="center"
-                  onClick={() => setFieldValue("paymentGateway", "STRIPE_PMC")}
-                >
-                  Stripe (PMC)
-                </MDBox>
+
               </Grid>
 
               { values?.paymentGateway === "STRIPE" && (
@@ -299,9 +280,6 @@ function PaymentGateway() {
                       </MenuItem>
                       <MenuItem value={"umair-test"}>
                         Umair Test
-                      </MenuItem>
-                      <MenuItem value={"pmc"}>
-                        PMC
                       </MenuItem>
                     </MDDropDown>
                   </FormControl>

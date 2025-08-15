@@ -58,7 +58,6 @@ export function centsToUSD(centsAmount) {
 export function centsToDollars(centsAmount) {
   const dollars = ceil(centsAmount / 100, 2);
   return dollars;
-
 }
 
 export function capitalizeFirstLetter(str) {
@@ -358,14 +357,12 @@ export function getDateInfo(date) {
 }
 
 export function amountToShow(amount) {
-  const formattedAmount = amount / 100;
-  return `${formattedAmount.toFixed(2)}`;
+  return `${amount}`;
 }
 
 
 export function floorAmountToShow(amount) {
-  // const formattedAmount = amount / 100;
-  return `${Math.floor(amount) / 100}`;
+  return `${Math.floor(amount)}`;
 }
 
 export function licensePlateArrayToString(licensePlateArray) {
@@ -494,9 +491,6 @@ export function getStripePublicKey(place) {
   switch (get(place, "stripeConfiguration.name", "")) {
     case "umair-test":
       PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY_UMAIR_TEST;
-      break;
-    case "pmc":
-      PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY_PMC;
       break;
   }
 

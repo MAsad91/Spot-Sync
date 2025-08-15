@@ -26,8 +26,6 @@ const getStripeInstance = (params) => {
   switch (get(params, "place.stripeConfiguration.name", "")) {
     case "umair-test":
       return Stripe(process.env.STRIPE_SECRET_KEY_UMAIR_TEST);
-    case "pmc":
-      return Stripe(process.env.STRIPE_SECRET_KEY_PMC);
     default:
       return Stripe(process.env.STRIPE_SECRET_KEY);
   }
@@ -441,7 +439,7 @@ const createPaymentIntentForSplits = async (params) => {
     console.log("transferMetadata ===>", transferMetadata);
 
     const transferObject = {
-      currency: "usd",
+      currency: "pkr",
       transfer_group: groupId,
       metadata: transferMetadata,
     };
@@ -608,7 +606,7 @@ const createPaymentIntentForSplitsWithDestinationCharge = async (params) => {
     console.log("transferMetadata ===>", transferMetadata);
 
     const transferObject = {
-      currency: "usd",
+      currency: "pkr",
       transfer_group: groupId,
       metadata: transferMetadata,
     };
@@ -750,7 +748,7 @@ const createValidationFlowPaymentIntent = async (params) => {
     const stripe = getStripeInstance(params);
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "usd",
+      currency: "pkr",
       payment_method_types: ["card"],
       capture_method: "manual",
     });
@@ -859,7 +857,7 @@ const createPaymentIntentForACH = async (params) => {
       amount,
       metadata,
       application_fee_amount: applicationFeeAmount,
-      currency: "usd",
+      currency: "pkr",
       payment_method_types: ["us_bank_account"],
       transfer_data: {
         destination: connectedAccountId,

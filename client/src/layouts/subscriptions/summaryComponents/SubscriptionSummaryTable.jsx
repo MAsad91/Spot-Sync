@@ -115,7 +115,7 @@ const SubscriptionSummaryTable = (props) => {
           sx={{ color: "black.light" }}
         >
 
-          {`$${centsToDollars(row?.totalAmount) || "-"}`}
+          {`₨${row?.totalAmount || "-"}`}
 
         </MDTypography>
       ),

@@ -211,10 +211,9 @@ const DefaultFields = (props) => {
                                                     name="paymentGateway"
                                                     onChange={props.handleChange}
                                                 >
-                                                    <MenuItem value={"AUTHORIZENET"}>Authorize.net (PMC)</MenuItem>
-                                                    <MenuItem value={"AUTHORIZENET_PMC"}>Authorize.net ( PMC-2)</MenuItem>
+                                                    <MenuItem value={"JAZZ_CASH"}>Jazz Cash</MenuItem>
+                                                    <MenuItem value={"EASY_PAISA"}>EasyPaisa</MenuItem>
                                                     <MenuItem value={"STRIPE"}>Stripe</MenuItem>
-                                                    <MenuItem value={"STRIPE_PMC"}>Stripe (PMC)</MenuItem>
                                                 </MDDropDown>
                                             </FormControl>
                                         </Grid>
