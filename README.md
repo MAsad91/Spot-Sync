@@ -245,13 +245,6 @@ We welcome contributions! Please follow these steps:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
-
-- 📧 **Email**: support@spotsync.com
-- 💬 **Discord**: [Join our community](https://discord.gg/spotsync)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/MAsad91/Spot-Sync/issues)
-- 📖 **Documentation**: [Wiki](https://github.com/MAsad91/Spot-Sync/wiki)
-
 ## 🙏 Acknowledgments
 
 - **Material-UI** - For the beautiful component library
